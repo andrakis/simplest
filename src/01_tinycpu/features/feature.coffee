@@ -17,9 +17,9 @@ class Feature
 	
 	get_features: (cpu) -> feature for feature of cpu[CPU_FEATURE_VAR]
 
-	read: (loc, cpu) -> @handle_read loc, cpu
+	read: (loc, cpu, real_read) -> real_read.call(cpu, loc)
 	
-	write: (loc, value, cpu) -> @handle_write loc, value, cpu
+	write: (loc, value, cpu, real_write) -> real_write.call(cpu, loc, value)
 	
 	interrupt: (num, cpu) -> @handle_interrupt num, cpu
 	

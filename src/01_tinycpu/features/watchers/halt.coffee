@@ -32,7 +32,7 @@ class Halt extends Feature
 					@[HALTED_VAR] = true
 					feature.halt_callback(@) if feature.halt_callback?
 					0 # Do nothing
-				else real_execute sp, src, add, dst
+				else real_execute.call(cpu, sp, src, add, dst)
 			return
 		)(cpu.execute)
 

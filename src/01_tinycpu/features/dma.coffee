@@ -52,7 +52,7 @@ class DMA extends Feature
 		if !register_range @rangeStart, @rangeEnd, @
 			feature = find_feature @rangeStart
 			throw "range in use by #{feature.name}"
-		@log "device(#{@name}) registered"
+		@log "device(#{@name}, #{@rangeStart} ... #{@rangeEnd}) registered"
 	
 	offset: (loc) -> loc - @rangeStart
 	log: () ->

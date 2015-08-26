@@ -33,6 +33,8 @@
 #
 # Additional features can be loaded into a TinyCpu instance. See features/
 
+window = @
+
 class TinyCPU
 	constructor: () ->
 		@memory = {}
@@ -53,6 +55,9 @@ class TinyCPU
 		@r1 = @defReg 'r1'
 		@r2 = @defReg 'r2'
 
+		@memory[@sp] = 0
+		@new_stack 0
+
 	defReg: (name) ->
 		pos = @register_count++
 		@registers[name] = pos
@@ -64,13 +69,35 @@ class TinyCPU
 		`for (var i = 0; i < data.length; i++, loc++) this.write(loc, data[i])`
 		return
 	
-	read: (loc) -> @memory[loc]
-	write: (loc, value) -> @memory[loc] = value
+	new_stack: (start) ->
+		offset = 0
+		for i in [0..@register_count]
+			@write start + offset++, 0
+		return
+	
+	read: (loc) -> @memory[loc] || 0
+	write: (loc, value) -> @memory[loc] = value || 0
 	inc_r: (loc) -> @write(loc, @read(loc) + 1)
 	dec_r: (loc) -> @write(loc, @read(loc) - 1)
-	
+
+	enable_debug: (enable) ->
+		self = @
+		((read, write) ->
+			if !enable
+				self.read = read
+				self.write = write
+			else
+				self.read = (loc) ->
+					v = @memory[loc] || 0
+					console.log("cpu.read(", loc, ") = ", v)
+					v
+				self.write = (loc, value) ->
+					console.log("cpu.write(", loc, ", ", value, ") prev=", @memory[loc] || 0)
+					@memory[loc] = value || 0
+		)(self.read, self.write)
+
 	cycle: () ->
-		fetch()
+		@fetch()
 	
 	fetch: () ->
 		sp = @read @sp
@@ -78,9 +105,10 @@ class TinyCPU
 		src = @inc_r cp
 		add = @inc_r cp
 		dst = @inc_r cp
-		execute sp, src, add, dst
+		@execute sp, src, add, dst
 	
 	execute: (sp, src, add, dst) ->
+		throw "Lost instance" if @ == window
 		val = @write dst, @read(src) + add
 		@write sp + @ac, @read(sp + @ac) + val
 		@write sp + @dc, @read(sp + @dc) - val
