@@ -8,6 +8,7 @@ console.log("TinyCPU", TinyCPU)
 cpu = new TinyCPU
 cpu.enable_debug true
 
+# Register a callback for the halt feature
 halted = false
 (new Halt(() -> halted = true)).load_into cpu
 
@@ -60,3 +61,4 @@ console.log(cpu.memory)
 
 while halted == false
 	cpu.cycle()
+console.log("CPU halted, quitting")

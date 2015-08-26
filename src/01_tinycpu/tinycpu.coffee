@@ -48,7 +48,6 @@ class TinyCPU
 		@ac = @defReg 'ac'
 		@dc = @defReg 'dc'
 		@opsz = @defReg 'opsz'
-		@opsize = @write @opsz, 3         # Size of an instruction, 3 values
 		@eq0 = @defReg 'eq0'
 		@mt0 = @defReg 'mt0'
 		@lt0 = @defReg 'lt0'
@@ -57,6 +56,7 @@ class TinyCPU
 
 		@memory[@sp] = 0
 		@new_stack 0
+		@opsize = @write @opsz, 3         # Size of an instruction, 3 values
 
 	defReg: (name) ->
 		pos = @register_count++
@@ -77,8 +77,6 @@ class TinyCPU
 	
 	read: (loc) -> @memory[loc] || 0
 	write: (loc, value) -> @memory[loc] = value || 0
-	inc_r: (loc) -> @write(loc, @read(loc) + 1)
-	dec_r: (loc) -> @write(loc, @read(loc) - 1)
 
 	enable_debug: (enable) ->
 		self = @
@@ -102,14 +100,20 @@ class TinyCPU
 	fetch: () ->
 		sp = @read @sp
 		cp = @read sp + @cp
-		src = @inc_r cp
-		add = @inc_r cp
-		dst = @inc_r cp
+		src = @read cp
+		add = @read cp + 1
+		dst = @read cp + 2
+		console.log("Fetch, sp=", sp, ", cp=", cp, ", src=", src, "add=", add, "dst=", dst)
 		@execute sp, src, add, dst
 	
 	execute: (sp, src, add, dst) ->
 		throw "Lost instance" if @ == window
+		console.log("execute(", [sp, src, add, dst].join(', '), ")")
+		console.log("(sp=", sp, ")", @registers[src] || src, " + ", add, "->", @registers[dst] || dst)
 		val = @write dst, @read(src) + add
+		console.log("Updating cp...")
+		@write sp + @cp, @read(sp + @cp) + @read(@opsz)
+		console.log("Cp is now ", @read sp + @cp)
 		@write sp + @ac, @read(sp + @ac) + val
 		@write sp + @dc, @read(sp + @dc) - val
 		@write @eq0, if (val == 0) then @opsize else 0

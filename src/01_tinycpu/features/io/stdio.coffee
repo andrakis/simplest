@@ -33,13 +33,13 @@ FEATURE_STDIO = 'stdio'
 STDIO_MAGIC_MAGIC = 0xDEADBEEF01
 
 # Memory ranges
-STDIO_MAGIC   = 0
-STDIO_CHANNEL = 1
-STDIO_FEOF    = 2
-STDIO_FSEEK   = 3
-STDIO_FSEEK_FROM = 4
-STDIO_READ    = 5
-STDIO_WRITE   = 6
+STDIO_MAGIC   = -4
+STDIO_CHANNEL = -5
+STDIO_FEOF    = -6
+STDIO_FSEEK   = -7
+STDIO_FSEEK_FROM = -8
+STDIO_READ    = -9
+STDIO_WRITE   = -10
 RANGE = [-10, -4]
 
 STDIO_IN = 0
@@ -67,6 +67,7 @@ class Stdio extends DMA
 			rangeEnd: RANGE[1]
 	
 	dma_read: (loc, cpu) ->
+		console.log("io.dma_read(", loc, ")")
 		switch loc
 			when STDIO_MAGIC   then STDIO_MAGIC_MAGIC
 			when STDIO_CHANNEL then @buffer_index
@@ -77,6 +78,7 @@ class Stdio extends DMA
 			when STDIO_WRITE   then 0 # not supported
 	
 	dma_write: (loc, value, cpu) ->
+		console.log("io.dma_write(", loc, ",", value, ")")
 		switch loc
 			when STDIO_MAGIC   then 0 # not supported
 			when STDIO_CHANNEL then @switch_buffer value
