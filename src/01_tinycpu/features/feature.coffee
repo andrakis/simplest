@@ -23,13 +23,13 @@ class Feature
 	
 	interrupt: (num, cpu) -> @handle_interrupt num, cpu
 	
-	handle_read: (loc, cpu) ->
+	handle_read: (loc, cpu, real_read) ->
 		# Dummy implementation. Reads that value from cpu memory
-		cpu.real_read loc
+		real_read loc
 	
-	handle_write: (loc, value, cpu) ->
+	handle_write: (loc, value, cpu, real_write) ->
 		# Dummy implementation. Writes that value to loc on cpu memory
-		cpu.real_write loc, value
+		real_write loc, value
 	
 	handle_interrupt: (num, cpu) ->
 		# Dummy implementation. Does nothing.
@@ -37,16 +37,16 @@ class Feature
 	# Load the feature into the CPU
 	load_into: (cpu) ->
 		((instance, feature) ->
-			if !instance[CPU_FEATURE_VAR]?
-				instance.real_read = instance.read
-				instance.real_write = instance.write
-				instance.read = (loc) -> feature.read loc, instance
-				instance.write = (loc, value) -> feature.write loc, value, instance
-				instance.interrupt = (num) -> feature.interrupt num, instance
-				instance[CPU_FEATURE_VAR] = {}
-			instance[CPU_FEATURE_VAR][@name] = feature
-			feature.handle_load_into instance
-			instance
+			((read, write) ->
+				if !instance[CPU_FEATURE_VAR]?
+					instance.read = (loc) -> feature.read loc, instance, read
+					instance.write = (loc, value) -> feature.write loc, value, instance, write
+					instance.interrupt = (num) -> feature.interrupt num, instance
+					instance[CPU_FEATURE_VAR] = {}
+				instance[CPU_FEATURE_VAR][@name] = feature
+				feature.handle_load_into instance
+				instance
+			)(instance.read, instance.write)
 		)(cpu, @)
 	
 	handle_load_into: (cpu) ->

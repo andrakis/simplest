@@ -19,8 +19,10 @@ class ConcurProcess
 		{@lpid, @rpid, @init_module, @init_fun, @init_args} = Options
 		@stack = []
 		@stack.push new ConcurStack(
-			{module: @init_module, fun: @init_fun, args: @init_args,
-			 process: @}
+			module: @init_module,
+			fun: @init_fun,
+			args: @init_args,
+			process: @
 		)
 		@messages = []
 		@memory = {}

@@ -34,11 +34,11 @@
 # Additional features can be loaded into a TinyCpu instance. See features/
 
 class TinyCPU
-	@memory = {}
-	@registers = {}
-	@register_count = 0
-
 	constructor: () ->
+		@memory = {}
+		@registers = {}
+		@register_count = 0
+
 		@abs0 = @defReg 'abs0'
 		@sp = @defReg 'sp'
 		@psp = @defReg 'psp'
@@ -55,8 +55,8 @@ class TinyCPU
 
 	defReg: (name) ->
 		pos = @register_count++
-		registers[name] = pos
-		registers[pos] = name
+		@registers[name] = pos
+		@registers[pos] = name
 		pos
 	
 	load: (loc, data) ->
@@ -89,4 +89,5 @@ class TinyCPU
 		@write @lt0, if (val <  0) then @opsize else 0
 		val
 
-exports.TinyCPU = TinyCPU
+exports = module.exports =
+	TinyCPU: TinyCPU

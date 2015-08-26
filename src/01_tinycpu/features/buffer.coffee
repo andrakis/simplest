@@ -32,7 +32,7 @@ class Buffer
 		result = []
 		mapper ||= String.fromCharCode
 		reducer ||= (r) -> r.join ''
-		while !@eof && (if max then length++ <= max else true)
+		while !@eof() && (if max then length++ <= max else true)
 			result.push mapper(@read)
 		reducer result
 

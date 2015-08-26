@@ -1,8 +1,10 @@
-{Feature} = require('features/feature')
-{Halt} = require('features/watchers/halt')
-{Stdio, Buffer, STDIO_IN, STDIO_OUT, STDIO_ERR} = require('features/io/stdio')
+require('coffee-script/register')
+{Feature} = require('../features/feature')
+{Halt} = require('../features/watchers/halt')
+{Stdio, Buffer, STDIO_IN, STDIO_OUT, STDIO_ERR} = require('../features/io/stdio')
 {TinyCPU} = require('tinycpu')
 
+console.log("TinyCPU", TinyCPU)
 cpu = new TinyCPU
 
 halted = false

@@ -5,7 +5,7 @@
 # question.
 #
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/Feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
 
 DEBUG = true
 
@@ -19,9 +19,12 @@ FEATURE_DMA = 'DMA'
 dma_ranges = []
 
 register_range = (start, end, instance) ->
+	throw "Instance required in register_range(" + start + ", " + end + ")" if !instance
 	if start > end
 		# Switch the values
-		`start = start ^ end ^ (end ^ = (start ^ end))`
+		tmp = start
+		start = end
+		end = tmp
 	# TODO: This isn't a very robust check.
 	for feature in dma_ranges
 		if feature.start >= start && feature.end >= start
@@ -81,5 +84,5 @@ class DMA extends Feature
 exports = module.exports || {}
 exports[FEATURE_NAME]  = FEATURE_DMA
 exports[FEATURE_CLASS] = DMA
-exports.register_feature = register_feature
+exports.register_feature = register_range
 exports.find_feature = find_feature

@@ -57,7 +57,7 @@ class Stdio extends DMA
 	@buffer_stderr = new Buffer
 	@buffers = [@buffer_stdin, @buffer_stdout, @buffer_stderr]
 	@buffer_index = 0
-	@buffer = @buffer[@buffer_index]
+	@buffer = @buffers[@buffer_index]
 	@fseek_from = SEEK_CURR
 
 	constructor: (flush_callback) ->

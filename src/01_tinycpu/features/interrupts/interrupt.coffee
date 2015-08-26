@@ -29,14 +29,15 @@ class Interrupt extends Feature
 		cpu[FREQ_VAR] = DEFAULT_FREQ
 		cpu[LAST_VAR] = feature.timestamp()
 		cpu.handle_interrupts = () -> feature.handle_interrupts @
-		cpu.real_cycle = cpu.cycle
-		cpu.cycle = () ->
-			timestamp = feature.timestamp()
-			if timestamp - this[LAST_VAR] >= this[FREQ_VAR]
-				@[TIMER_VAR]++
-				@handle_interrupts()
-				@[LAST_VAR] = feature.timestamp()
-			@fetch()
+		((real_cycle) ->
+			cpu.cycle = () ->
+				timestamp = feature.timestamp()
+				if timestamp - this[LAST_VAR] >= this[FREQ_VAR]
+					@[TIMER_VAR]++
+					@handle_interrupts()
+					@[LAST_VAR] = feature.timestamp()
+				@fetch()
+		)(cpu.cycle)
 		return
 	
 	timestamp: () -> (new Date).getTime()

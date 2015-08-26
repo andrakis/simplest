@@ -6,7 +6,7 @@
 # TODO: Support for interrupts.
 #
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
 
 FEATURE_HALT = 'halt'
 HALTED_VAR = 'halted'
