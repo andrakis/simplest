@@ -8,6 +8,7 @@ console.log("TinyCPU", TinyCPU)
 cpu = new TinyCPU
 
 halted = false
+console.log("Loading halt")
 (new Halt(() -> halted = true)).load_into cpu
 
 stdio = new Stdio((buffer_index, buffer) ->
@@ -21,3 +22,5 @@ stdio = new Stdio((buffer_index, buffer) ->
 	return
 )
 stdio.load_into cpu
+
+console.log(stdio.get_features(cpu).join(', '), 'loaded into test CPU')

@@ -52,15 +52,14 @@ SEEK_START = 1
 SEEK_END = 2
 
 class Stdio extends DMA
-	@buffer_stdin = new Buffer
-	@buffer_stdout = new Buffer
-	@buffer_stderr = new Buffer
-	@buffers = [@buffer_stdin, @buffer_stdout, @buffer_stderr]
-	@buffer_index = 0
-	@buffer = @buffers[@buffer_index]
-	@fseek_from = SEEK_CURR
-
 	constructor: (flush_callback) ->
+		@buffer_stdin = new Buffer
+		@buffer_stdout = new Buffer
+		@buffer_stderr = new Buffer
+		@buffers = [@buffer_stdin, @buffer_stdout, @buffer_stderr]
+		@buffer_index = 0
+		@buffer = @buffers[@buffer_index]
+		@fseek_from = SEEK_CURR
 		@flush_callback = flush_callback
 		super
 			name: "standard io"

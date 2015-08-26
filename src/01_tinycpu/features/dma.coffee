@@ -47,9 +47,9 @@ class DMA extends Feature
 		{@rangeStart, @rangeEnd, @debug, @name} = options
 		@debug = DEBUG unless @debug?
 		@name = "generic DMA device" unless @name
-		super FEATURE_DMA
+		super @name
 
-		if !register_range @rangeStart, @rangeEnd
+		if !register_range @rangeStart, @rangeEnd, @
 			feature = find_feature @rangeStart
 			throw "range in use by #{feature.name}"
 		@log "device(#{@name}) registered"

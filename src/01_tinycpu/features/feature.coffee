@@ -36,6 +36,8 @@ class Feature
 	
 	# Load the feature into the CPU
 	load_into: (cpu) ->
+		console.log("Loading", @name, "into CPU instance")
+		name = @name
 		((instance, feature) ->
 			((read, write) ->
 				if !instance[CPU_FEATURE_VAR]?
@@ -43,7 +45,7 @@ class Feature
 					instance.write = (loc, value) -> feature.write loc, value, instance, write
 					instance.interrupt = (num) -> feature.interrupt num, instance
 					instance[CPU_FEATURE_VAR] = {}
-				instance[CPU_FEATURE_VAR][@name] = feature
+				instance[CPU_FEATURE_VAR][name] = feature
 				feature.handle_load_into instance
 				instance
 			)(instance.read, instance.write)

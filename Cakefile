@@ -79,11 +79,11 @@ task 'watch', 'Watch files for changes', ->
 		print data.toString()
 
 task 'run', 'Run test feature', ->
-	features_path = "src/01_tinycpu"
+	node_path = "src/01_tinycpu"
 	test_path     = "src/01_tinycpu/tests/features"
 	p = spawn "node", [test_path],
 		env:
-			NODE_PATH: features_path
+			NODE_PATH: node_path
 		stdio: [0, 1, 2]
 	console.log("Node starting up")
 	p.on 'exit', (code) ->
