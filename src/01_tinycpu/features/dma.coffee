@@ -60,17 +60,33 @@ class DMA extends Feature
 		if @debug
 			console.log.apply(console, arguments)
 		return
+	
+	isInRange: (loc) ->
+		if @rangeStart > 0 && @rangeEnd > 0
+			(loc >= @rangeStart && loc <= @rangeEnd)
+		else if @rangeStart < 0 && @rangeEnd < 0
+			(loc <= @rangeStart && loc >= @rangeEnd)
+		else
+			false
 
-	handle_read: (loc, cpu) ->
-		offset = @offset loc
-		result = @dma_read offset, cpu
-		log "dma_read(#{offset}) = #{result}"
+	handle_read: (loc, cpu, real_read) ->
+		match = @isInRange loc
+		if match
+			offset = @offset loc
+			result = @dma_read offset, cpu
+		else
+			result = real_read loc
+		log "dma_read(#{offset}) = #{result}", (match ? "(dma handled)" : "" )
 		result
 	
-	handle_write: (loc, value, cpu) ->
-		offset = @offset loc
-		result = @dma_write offset, value, cpu
-		log "dma_write(#{offset}) = #{result}"
+	handle_write: (loc, value, cpu, real_write) ->
+		match = @isInRange loc
+		if match
+			offset = @offset loc
+			result = @dma_write offset, value, cpu
+		else
+			result = real_write loc, value
+		log "dma_write(#{offset}) = #{result}", (match ? "(dma handled)" : "" )
 		result
 	
 	dma_read: (loc, cpu) ->
