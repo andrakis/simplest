@@ -25,11 +25,13 @@ class Feature
 	
 	handle_read: (loc, cpu, real_read) ->
 		# Dummy implementation. Reads that value from cpu memory
-		real_read loc
+		#console.log("handle_read(", [loc].join(', '), "): Feature dummy implementation")
+		real_read.call cpu, loc
 	
 	handle_write: (loc, value, cpu, real_write) ->
 		# Dummy implementation. Writes that value to loc on cpu memory
-		real_write loc, value
+		console.log("handle_write(", [loc, value].join(', '), "): Feature dummy implementation")
+		real_write.call cpu, loc, value
 	
 	handle_interrupt: (num, cpu) ->
 		# Dummy implementation. Does nothing.
@@ -41,8 +43,8 @@ class Feature
 		((instance, feature) ->
 			((read, write) ->
 				if !instance[CPU_FEATURE_VAR]?
-					instance.read = (loc) -> feature.read loc, instance, read
-					instance.write = (loc, value) -> feature.write loc, value, instance, write
+					instance.read = (loc) -> feature.handle_read loc, instance, read
+					instance.write = (loc, value) -> feature.handle_write loc, value, instance, write
 					instance.interrupt = (num) -> feature.interrupt num, instance
 					instance[CPU_FEATURE_VAR] = {}
 				instance[CPU_FEATURE_VAR][name] = feature
