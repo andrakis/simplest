@@ -1,8 +1,22 @@
+# Features test
+#
+# This is a generic test for the TinyCPU and some features.
+# It tests two useful ones:
+#
+#  halt     When CPU encounters endless jump, calls callback to
+#           allow the host process to stop CPU execution.
+#  stdio    Allows input / output across streams
+#
+# The test loads both of these features into a CPU instance,
+# then compiles some code to work with stdio. The final command
+# is the endless jump: abs0, 0, cp
+#
+
 require('coffee-script/register')
 {Feature} = require('../features/feature')
 {Halt} = require('../features/watchers/halt')
 {Stdio, Buffer, STDIO_OUT, STDIO_CHANNEL, STDIO_WRITE, STDIO_FLUSH,
- STDIO_FEOF, STDIO_IN, STDIO_OUT, STDIO_ERR} = require('../features/io/stdio')
+ STDIO_FEOF, STDIO_IN, STDIO_ERR} = require('../features/io/stdio')
 {TinyCPU} = require('tinycpu')
 {vlog} = require('verbosity')
 
@@ -52,13 +66,13 @@ hello = [
 	abs0, charCode('!'), STDIO_WRITE
 	# Flush
 	abs0, STDIO_FLUSH, STDIO_CHANNEL
-	# Attempt to read from STDIN
+	# Check if STDIN is at EOF
 	abs0, STDIO_IN, STDIO_CHANNEL
 	STDIO_FEOF, 0, r1
 	# Add '0' to result and print
 	0, 0, ac   # Clear AC
 	r1, 0, r1  # Observe r1
-	0, 48, r2  # Add 48
+	0, 48, r2  # Add 48, ASCII for '0'
 	ac, 0, r1  # Grab result and store to r1
 	abs0, STDIO_OUT, STDIO_CHANNEL  # Back to output channel
 	r1, 0, STDIO_WRITE # Write result
@@ -73,7 +87,7 @@ cpu.write cp, 100
 # Debug
 vlog(50, cpu.memory)
 
-cycles = 10
+# Run the cpu until halted
 while halted == false
 	cpu.cycle()
 vlog(20, "CPU halted, quitting")

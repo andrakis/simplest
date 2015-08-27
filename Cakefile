@@ -3,7 +3,17 @@ fs     = require 'fs'
 
 typeIsArray = Array.isArray || (value) -> return {}.toString.call(value) is '[object Array]'
 
-# omit src/ and .coffee to make the below lines a little shorter
+debugLevel = process.env.CAKE_VERB || 10
+debug = () ->
+	args = Array.prototype.slice.call(arguments)
+	level = args.shift()
+	if level <= debugLevel
+		console.log.apply(console, args)
+
+# Source file definitions
+# Key is path, with subkeys inheriting the parent path.
+# The value is either another hash (path continuation), or filespec array.
+# '' is used to denote no new path.
 appFiles =
 	'01_tinycpu':
 		'': ['tinycpu', 'verbosity']
@@ -22,29 +32,29 @@ appFiles =
 translate = (files, pathAcc) ->
 	path = pathAcc || []
 	appFiles = []
-	console.log("translate(", '...', ", ", path, ")")
+	debug(50, "translate(", '...', ", ", path, ")")
 	for filespec, targets of files
 		if typeIsArray(targets)
 			path.push(filespec) if filespec != ''
 			total_path = path.join('/')
-			console.log("Targets is array", targets, "total_path: ", total_path)
+			debug(50, "Targets is array", targets, "total_path: ", total_path)
 			for target in targets
 				appFiles.push(total_path + "/" + target)
 			path.pop() if filespec != ''
 		else
 			if targets != ''
 				if typeof targets == typeof {}
-					console.log("Recursing with directory, x=", filespec)
+					debug(50, "Recursing with directory, x=", filespec)
 					path.push(filespec)
 					appFiles = appFiles.concat(translate(targets, path))
 					path.pop()
 				else if typeof targets == typeof ""
-					console.log("Pushing path: ", targets)
+					debug(50, "Pushing path: ", targets)
 					path.push targets
 	appFiles
 
 appFiles = translate(appFiles)
-console.log(appFiles)
+debug(10, appFiles)
 
 task 'build_app', 'Build single application file from source files', ->
   appContents = new Array remaining = appFiles.length
@@ -67,6 +77,7 @@ task 'build', 'Build source files', ->
 	# Prefix appFiles
 	pAppFiles = for file in appFiles
 		"src/#{file}"
+	console.log "Compiling: ", pAppFiles.join(', ')
 	exec 'coffee --compile ' + pAppFiles.join(' '), (err, stdout, stderr) ->
 		throw err if err
 		console.log stdout + stderr
@@ -90,3 +101,14 @@ task 'run', 'Run test feature', ->
 	p.on 'exit', (code) ->
 		console.log("Node quit (", code, "), finishing")
 		process.exit(code)
+
+task 'clean', 'Clean compiled js files', ->
+	jsFiles = []
+	for file in appFiles
+		jsFiles.push "src/#{file}.js"
+	unlink = (file, next) ->
+		console.log "unlink(", file, ")"
+		fs.unlink(file, () -> 0)
+		file = next.shift()
+		unlink(file, next) if file
+	unlink(jsFiles.shift(), jsFiles)
