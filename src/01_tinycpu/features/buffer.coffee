@@ -11,6 +11,7 @@ class Buffer
 		@pos = 0
 
 	eof: () -> @pos == @buffer.length
+	feof: () -> @eof()
 	read: () ->
 		val = @buffer[@pos++]
 		vlog(50, "Buffer.read() = ", val)

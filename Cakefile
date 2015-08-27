@@ -80,12 +80,13 @@ task 'watch', 'Watch files for changes', ->
 
 task 'run', 'Run test feature', ->
 	node_path = "src/01_tinycpu"
-	test_path     = "src/01_tinycpu/tests/features"
-	p = spawn "node", [test_path],
+	init_path = "src/01_tinycpu/tests/features"
+	p = spawn "node", [init_path],
 		env:
 			NODE_PATH: node_path
+			TINY_VERB: process.TINY_VERB || 0
 		stdio: [0, 1, 2]
-	console.log("Node starting up")
+	console.log("Node starting up", p)
 	p.on 'exit', (code) ->
-		console.log("Node quit, finishing")
+		console.log("Node quit (", code, "), finishing")
 		process.exit(code)

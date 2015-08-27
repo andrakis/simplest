@@ -20,4 +20,4 @@ exports = module.exports =
 	setVerbosity: (v) -> settings[SETTINGS_VERB] = v
 	getVerbosity: ()  -> settings[SETTINGS_VERB] || 0
 
-exports.setVerbosity(10)
+exports.setVerbosity(process.env.TINY_VERB || 10)

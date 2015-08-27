@@ -109,7 +109,7 @@ class Stdio extends DMA
 			throw "stdio: switch_buffer(#{buffer}): invalid buffer"
 	
 	handle_flush: () ->
-		vlog(20, "STDIO.flush(), calling callback: ", @flush_callback)
+		vlog(50, "STDIO.flush(), calling callback: ", @flush_callback)
 		@flush_callback(@buffer_index, @buffer)
 		@buffer_index
 

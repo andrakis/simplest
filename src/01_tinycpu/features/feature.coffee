@@ -28,12 +28,12 @@ class Feature
 	handle_read: (loc, cpu, real_read) ->
 		# Dummy implementation. Reads that value from cpu memory
 		vlog(100, "self is", @)
-		vlog(50, "handle_read(", [loc].join(', '), "): Feature dummy implementation")
+		vlog(80, "handle_read(", [loc].join(', '), "): Feature dummy implementation")
 		real_read.call cpu, loc
 	
 	handle_write: (loc, value, cpu, real_write) ->
 		# Dummy implementation. Writes that value to loc on cpu memory
-		vlog(50, "handle_write(", [loc, value].join(', '), "): Feature dummy implementation")
+		vlog(80, "handle_write(", [loc, value].join(', '), "): Feature dummy implementation")
 		real_write.call cpu, loc, value
 	
 	handle_interrupt: (num, cpu) ->
