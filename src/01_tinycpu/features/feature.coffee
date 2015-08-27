@@ -3,6 +3,8 @@
 # Extend this class to implement your own features.
 #
 
+{vlog} = require('verbosity')
+
 CPU_FEATURE_VAR = '_features'
 FEATURE_NAME    = 'name'
 FEATURE_CLASS   = 'class'
@@ -25,12 +27,13 @@ class Feature
 	
 	handle_read: (loc, cpu, real_read) ->
 		# Dummy implementation. Reads that value from cpu memory
-		#console.log("handle_read(", [loc].join(', '), "): Feature dummy implementation")
+		vlog(100, "self is", @)
+		vlog(50, "handle_read(", [loc].join(', '), "): Feature dummy implementation")
 		real_read.call cpu, loc
 	
 	handle_write: (loc, value, cpu, real_write) ->
 		# Dummy implementation. Writes that value to loc on cpu memory
-		console.log("handle_write(", [loc, value].join(', '), "): Feature dummy implementation")
+		vlog(50, "handle_write(", [loc, value].join(', '), "): Feature dummy implementation")
 		real_write.call cpu, loc, value
 	
 	handle_interrupt: (num, cpu) ->
@@ -38,19 +41,19 @@ class Feature
 	
 	# Load the feature into the CPU
 	load_into: (cpu) ->
-		console.log("Loading", @name, "into CPU instance")
+		vlog(10, "Loading", @name, "into CPU instance")
 		name = @name
 		((instance, feature) ->
-			((read, write) ->
+			((read, write, interrupt) ->
 				if !instance[CPU_FEATURE_VAR]?
-					instance.read = (loc) -> feature.handle_read loc, instance, read
-					instance.write = (loc, value) -> feature.handle_write loc, value, instance, write
-					instance.interrupt = (num) -> feature.interrupt num, instance
 					instance[CPU_FEATURE_VAR] = {}
+				instance.read = (loc) -> feature.handle_read loc, instance, read
+				instance.write = (loc, value) -> feature.handle_write loc, value, instance, write
+				instance.interrupt = (num) -> feature.interrupt num, instance
 				instance[CPU_FEATURE_VAR][name] = feature
 				feature.handle_load_into instance
 				instance
-			)(instance.read, instance.write)
+			)(instance.read, instance.write, instance.interrupt)
 		)(cpu, @)
 	
 	handle_load_into: (cpu) ->

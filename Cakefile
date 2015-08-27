@@ -6,7 +6,7 @@ typeIsArray = Array.isArray || (value) -> return {}.toString.call(value) is '[ob
 # omit src/ and .coffee to make the below lines a little shorter
 appFiles =
 	'01_tinycpu':
-		'': ['tinycpu']
+		'': ['tinycpu', 'verbosity']
 		'features':
 			'': ['feature', 'dma', 'buffer']
 			interrupts: ['interrupt']

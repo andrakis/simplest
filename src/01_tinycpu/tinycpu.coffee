@@ -33,7 +33,7 @@
 #
 # Additional features can be loaded into a TinyCpu instance. See features/
 
-window = @
+{vlog} = require('verbosity')
 
 class TinyCPU
 	constructor: () ->
@@ -86,12 +86,13 @@ class TinyCPU
 				self.write = write
 			else
 				self.read = (loc) ->
-					v = @memory[loc] || 0
-					console.log("cpu.read(", loc, ") = ", v)
+					v = read.call(self, loc)
+					vlog(70, "cpu.read(", loc, ") = ", v)
 					v
 				self.write = (loc, value) ->
-					console.log("cpu.write(", loc, ", ", value, ") prev=", @memory[loc] || 0)
-					@memory[loc] = value || 0
+					prev = read.call(self, loc)
+					vlog(70, "cpu.write(", loc, ", ", value, ") prev=", prev)
+					write.call(self, loc, value)
 		)(self.read, self.write)
 
 	cycle: () ->
@@ -103,17 +104,16 @@ class TinyCPU
 		src = @read cp
 		add = @read cp + 1
 		dst = @read cp + 2
-		console.log("Fetch, sp=", sp, ", cp=", cp, ", src=", src, "add=", add, "dst=", dst)
+		vlog(20, "Fetch, sp=", sp, ", cp=", cp, ", src=", src, "add=", add, "dst=", dst)
 		@execute sp, src, add, dst
 	
 	execute: (sp, src, add, dst) ->
-		throw "Lost instance" if @ == window
-		console.log("execute(", [sp, src, add, dst].join(', '), ")")
-		console.log("(sp=", sp, ")", @registers[src] || src, " + ", add, "->", @registers[dst] || dst)
+		vlog(40, "execute(", [sp, src, add, dst].join(', '), ")")
+		vlog(60, "(sp=", sp, ")", @registers[src - sp] || src, " + ", add, "->", @registers[dst - sp] || dst)
 		val = @write dst, @read(src) + add
-		console.log("Updating cp...")
-		@write sp + @cp, @read(sp + @cp) + @read(@opsz)
-		console.log("Cp is now ", @read sp + @cp)
+		vlog(90, "Updating cp...")
+		@write sp + @cp, @read(sp + @cp) + @read(sp + @opsz)
+		vlog(90, "Cp is now ", @read sp + @cp)
 		@write sp + @ac, @read(sp + @ac) + val
 		@write sp + @dc, @read(sp + @dc) - val
 		@write @eq0, if (val == 0) then @opsize else 0

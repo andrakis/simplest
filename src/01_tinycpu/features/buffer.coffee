@@ -3,13 +3,22 @@
 # Buffers are used by various hardware devices such as Stdio.
 #
 
+{vlog} = require('verbosity')
+
 class Buffer
-	@buffer = []
-	@pos = 0
+	constructor: () ->
+		@buffer = []
+		@pos = 0
 
 	eof: () -> @pos == @buffer.length
-	read: () -> val = @buffer[@pos++]; @rangecheck(); val
-	write: (value) -> @_push value
+	read: () ->
+		val = @buffer[@pos++]
+		vlog(50, "Buffer.read() = ", val)
+		@rangecheck()
+		val
+	write: (value) ->
+		vlog(50, "Buffer.write(", value, ")")
+		@_push value
 	seek: (offset, from) ->
 		@pos = switch from
 			when SEEK_CURR  then pos + offset
@@ -20,10 +29,11 @@ class Buffer
 	rangecheck: () ->
 		# If we go beyond the buffer, rewind to the start
 		while @pos > @buffer.length
+			vlog(70, "Adjusting @pos from ", @pos, " to ", @pos - @buffer.length)
 			@pos -= @buffer.length
 		@pos
 
-	_push: (value) -> @buffer.push value; value
+	_push: (value) -> vlog(70, "This is ", @); @buffer.push value; value
 	_pop: () -> @buffer.pop()
 
 	# Read up to the end of the buffer (or max) and return as a string
@@ -33,7 +43,9 @@ class Buffer
 		mapper ||= String.fromCharCode
 		reducer ||= (r) -> r.join ''
 		while !@eof() && (if max then length++ <= max else true)
-			result.push mapper(@read)
+			v = mapper(@read())
+			vlog(70, "Buffer.flush: got ", v)
+			result.push v
 		reducer result
 
 exports.Buffer = Buffer

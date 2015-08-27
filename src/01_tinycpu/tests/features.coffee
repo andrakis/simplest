@@ -59,6 +59,7 @@ cpu.write cp, 100
 # Debug
 console.log(cpu.memory)
 
+cycles = 10
 while halted == false
 	cpu.cycle()
 console.log("CPU halted, quitting")

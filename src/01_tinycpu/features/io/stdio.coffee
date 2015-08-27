@@ -22,9 +22,11 @@
 #     add abs0, -1, STDIO_FSEEK
 #   flush:
 #     add abs0, STDIO_FLUSH, STDIO_CHANNEL    # STDIO_CHANNEL will be unchanged
+
 feature = require('features/feature')
 dma = require('features/dma')
 {Buffer} = require('features/buffer')
+{vlog} = require('verbosity')
 
 DMA = dma[feature.FEATURE_CLASS]
 
@@ -67,8 +69,7 @@ class Stdio extends DMA
 			rangeEnd: RANGE[1]
 	
 	dma_read: (loc, cpu) ->
-		console.log("io.dma_read(", loc, ")")
-		switch loc
+		result = switch loc
 			when STDIO_MAGIC   then STDIO_MAGIC_MAGIC
 			when STDIO_CHANNEL then @buffer_index
 			when STDIO_FEOF    then @buffer.feof()
@@ -76,28 +77,39 @@ class Stdio extends DMA
 			when STDIO_FSEEK_FROM then @fseek_from
 			when STDIO_READ    then @buffer.read()
 			when STDIO_WRITE   then 0 # not supported
+		vlog(70, "io.dma_read(", loc, ")")
+		result
 	
 	dma_write: (loc, value, cpu) ->
-		console.log("io.dma_write(", loc, ",", value, ")")
-		switch loc
+		result = switch loc
 			when STDIO_MAGIC   then 0 # not supported
 			when STDIO_CHANNEL then @switch_buffer value
 			when STDIO_FEOF    then 0 # not supported
-			when STDIO_FSEEK   then @buffer.fseek value, @fseek_from
-			when STDIO_FSEEK_FROM then @fseek_from = value
+			when STDIO_FSEEK
+				vlog(20, "STDIO.fseek(", value, ", ", @fseek_from, ")")
+				@buffer.fseek value, @fseek_from
+			when STDIO_FSEEK_FROM
+				vlog(20, "STDIO.fseek_from(", value, ")")
+				@fseek_from = value
 			when STDIO_READ    then 0 # not supported
-			when STDIO_WRITE   then @buffer.write value
+			when STDIO_WRITE
+				vlog(20, "STDIO.write(", value, ")")
+				@buffer.write value
+		vlog(70, "io.dma_write(", loc, ",", value, ")")
+		result
 	
 	switch_buffer: (buffer) ->
 		if buffer >= 0 && buffer < @buffers.length
 			@buffer = @buffers[@buffer_index = buffer]
+			vlog(30, "STDIO.switch_buffer(", buffer, ")")
 			buffer
 		else if buffer == STDIO_FLUSH
-			@handle_flush
+			@handle_flush()
 		else
 			throw "stdio: switch_buffer(#{buffer}): invalid buffer"
 	
 	handle_flush: () ->
+		vlog(20, "STDIO.flush(), calling callback: ", @flush_callback)
 		@flush_callback(@buffer_index, @buffer)
 		@buffer_index
 
