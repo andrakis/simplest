@@ -66,7 +66,7 @@ hello = [
 	# Endless loop
 	abs0, 0, cp
 ]
-vlog(50, "Code: ", hello)
+vlog(50, "Code: [", hello.join(', '), "]")
 cpu.load 100, hello
 # Setup entry point
 cpu.write cp, 100

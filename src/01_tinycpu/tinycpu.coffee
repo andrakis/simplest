@@ -104,7 +104,7 @@ class TinyCPU
 		src = @read cp
 		add = @read cp + 1
 		dst = @read cp + 2
-		vlog(20, "Fetch, sp=", sp, ", cp=", cp, ", src=", src, "add=", add, "dst=", dst)
+		vlog(20, "Fetch, sp=", sp, ", cp=", cp, ", src=", @registers[src - sp] || src, "add=", add, "dst=", @registers[dst - sp] || dst)
 		@execute sp, src, add, dst
 	
 	execute: (sp, src, add, dst) ->

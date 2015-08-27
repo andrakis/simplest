@@ -99,10 +99,12 @@ class DMA extends Feature
 	
 	dma_read: (loc, cpu) ->
 		# Dummy implementation.
+		vlog(30, 'WARN: Dummy dma_read in ', @name)
 		0
 	
 	dma_write: (loc, value, cpu) ->
 		# Dummy implementation. Write fails.
+		vlog(30, 'WARN: Dummy dma_write in ', @name)
 		0
 
 exports = module.exports || {}
