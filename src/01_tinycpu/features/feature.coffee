@@ -1,17 +1,28 @@
-# Provides a feature for TinyCpu
+# Provides a feature for TinyCpu, and keeps track of various feature states.
 #
 # Extend this class to implement your own features.
 #
 
 {vlog} = require('verbosity')
+{decSymbol} = require('symbols')
 
-CPU_FEATURE_VAR = '_features'
-FEATURE_NAME    = 'name'
-FEATURE_CLASS   = 'class'
+CPU_FEATURE_VAR = decSymbol 'CPU_FEATURE_VAR', '_features'
+FEATURE_NAME    = decSymbol 'FEATURE_NAME', 'name'
+FEATURE_CLASS   = decSymbol 'FEATURE_CLASS', 'class'
+
+# Features are cached here upon creation
+feature_cache = {}
+
+register_feature = (name, feature) ->
+	throw "already registered" if name in feature_cache
+	feature_cache[name] = feature
+
+get_features = () -> feature_cache
 
 class Feature
 	constructor: (name) ->
 		@name = name
+		register_feature name, @
 
 	has_feature: (name, cpu) -> name of cpu[CPU_FEATURE_VAR]
 	
@@ -59,8 +70,12 @@ class Feature
 	handle_load_into: (cpu) ->
 		# Dummy implementation.
 
+decSymbol 'Feature', Feature
+
 exports = module.exports =
 	CPU_FEATURE_VAR: CPU_FEATURE_VAR
 	FEATURE_NAME: 'name'
 	FEATURE_CLASS: FEATURE_CLASS
 	Feature: Feature
+
+decSymbol 'Feature.exports', exports

@@ -34,6 +34,7 @@
 # Additional features can be loaded into a TinyCpu instance. See features/
 
 {vlog} = require('verbosity')
+{decSymbol} = require('symbols')
 
 class TinyCPU
 	constructor: () ->
@@ -62,6 +63,7 @@ class TinyCPU
 		pos = @register_count++
 		@registers[name] = pos
 		@registers[pos] = name
+		decSymbol name, pos
 		pos
 	
 	load: (loc, data) ->
@@ -121,5 +123,9 @@ class TinyCPU
 		@write @lt0, if (val <  0) then @opsize else 0
 		val
 
+decSymbol 'TinyCPU', TinyCPU
+
 exports = module.exports =
 	TinyCPU: TinyCPU
+
+decSymbol 'TinyCPU.exports', exports

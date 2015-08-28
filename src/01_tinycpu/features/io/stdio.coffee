@@ -27,31 +27,32 @@ feature = require('features/feature')
 dma = require('features/dma')
 {Buffer} = require('features/buffer')
 {vlog} = require('verbosity')
+{decSymbol} = require('symbols')
 
 DMA = dma[feature.FEATURE_CLASS]
 
-FEATURE_STDIO = 'stdio'
+FEATURE_STDIO = decSymbol 'FEATURE_STDIO', 'stdio'
 
-STDIO_MAGIC_MAGIC = 0xDEADBEEF01
+STDIO_MAGIC_MAGIC = decSymbol 'STDIO_MAGIC_MAGIC', 0xDEADBEEF01
 
 # Memory ranges
-STDIO_MAGIC   = -4
-STDIO_CHANNEL = -5
-STDIO_FEOF    = -6
-STDIO_FSEEK   = -7
-STDIO_FSEEK_FROM = -8
-STDIO_READ    = -9
-STDIO_WRITE   = -10
-RANGE = [-10, -4]
+STDIO_MAGIC   = decSymbol 'STDIO_MAGIC', -4
+STDIO_CHANNEL = decSymbol 'STDIO_CHANNEL', -5
+STDIO_FEOF    = decSymbol 'STDIO_FEOF', -6
+STDIO_FSEEK   = decSymbol 'STDIO_FSEEK', -7
+STDIO_FSEEK_FROM = decSymbol 'STDIO_FSEEK_FROM', -8
+STDIO_READ    = decSymbol 'STDIO_READ', -9
+STDIO_WRITE   = decSymbol 'STDIO_WRITE', -10
+STDIO_RANGE = decSymbol 'STDIO_RANGE', [-10, -4]
 
-STDIO_IN = 0
-STDIO_OUT = 1
-STDIO_ERR = 2
-STDIO_FLUSH = 11
+STDIO_IN = decSymbol 'STDIO_IN', 0
+STDIO_OUT = decSymbol 'STDIO_OUT', 1
+STDIO_ERR = decSymbol 'STDIO_ERR', 2
+STDIO_FLUSH = decSymbol 'STDIO_FLUSH', 11
 
-SEEK_CURR = 0
-SEEK_START = 1
-SEEK_END = 2
+SEEK_CURR = decSymbol 'SEEK_CURR', 0
+SEEK_START = decSymbol 'SEEK_START', 1
+SEEK_END = decSymbol 'SEEK_END', 2
 
 class Stdio extends DMA
 	constructor: (flush_callback) ->
@@ -65,8 +66,8 @@ class Stdio extends DMA
 		@flush_callback = flush_callback
 		super
 			name: "standard io"
-			rangeStart: RANGE[0]
-			rangeEnd: RANGE[1]
+			rangeStart: STDIO_RANGE[0]
+			rangeEnd: STDIO_RANGE[1]
 	
 	dma_read: (loc, cpu) ->
 		result = switch loc
@@ -113,6 +114,8 @@ class Stdio extends DMA
 		@flush_callback(@buffer_index, @buffer)
 		@buffer_index
 
+decSymbol 'Stdio', Stdio
+
 exports = module.exports =
 	STDIO_CHANNEL: STDIO_CHANNEL
 	STDIO_FEOF: STDIO_FEOF
@@ -130,3 +133,5 @@ exports = module.exports =
 	Stdio: Stdio
 exports[feature.FEATURE_NAME] = FEATURE_STDIO
 exports[feature.FEATURE_CLASS] = Stdio
+
+decSymbol 'Stdio.exports', exports

@@ -4,6 +4,7 @@
 #
 
 {vlog} = require('verbosity')
+{decSymbol} = require('symbols')
 
 class Buffer
 	constructor: () ->
@@ -49,4 +50,7 @@ class Buffer
 			result.push v
 		reducer result
 
+decSymbol 'Buffer', Buffer
 exports.Buffer = Buffer
+
+decSymbol 'Buffer.exports', exports

@@ -7,10 +7,11 @@
 
 {Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
 {vlog} = require('verbosity')
+{decSymbol} = require('symbols')
 
 DEBUG = true
 
-FEATURE_DMA = 'DMA'
+FEATURE_DMA = decSymbol 'FEATURE_DMA','DMA'
 
 # [] =
 #	start: 0
@@ -107,8 +108,12 @@ class DMA extends Feature
 		vlog(30, 'WARN: Dummy dma_write in ', @name)
 		0
 
+decSymbol "DMA", DMA
+
 exports = module.exports || {}
 exports[FEATURE_NAME]  = FEATURE_DMA
 exports[FEATURE_CLASS] = DMA
 exports.register_feature = register_range
 exports.find_feature = find_feature
+
+decSymbol "DMA.exports", exports

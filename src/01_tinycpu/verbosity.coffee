@@ -1,7 +1,9 @@
 # Verbosity-based logging
 #
 
-SETTINGS_VERB = 'verbosity'
+{decSymbol} = require('symbols')
+
+SETTINGS_VERB = decSymbol 'SETTINGS_VERB', 'verbosity'
 settings = {}
 
 vlog = () ->

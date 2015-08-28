@@ -7,9 +7,13 @@
 #
 
 {Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
+{decSymbol} = require('symbols')
 
 FEATURE_HALT = 'halt'
 HALTED_VAR = 'halted'
+
+decSymbol 'FEATURE_HALT', FEATURE_HALT
+decSymbol 'HALTED_VAR', HALTED_VAR
 
 class Halt extends Feature
 	constructor: (halt_callback) ->
@@ -36,6 +40,10 @@ class Halt extends Feature
 			return
 		)(cpu.execute)
 
+decSymbol 'Halt', Halt
+
 exports.Halt = Halt
 exports[FEATURE_NAME] = FEATURE_HALT
 exports[FEATURE_CLASS] = Halt
+
+decSymbol 'Halt.exports', exports

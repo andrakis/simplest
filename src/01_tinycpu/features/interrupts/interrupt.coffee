@@ -3,16 +3,17 @@
 #
 
 {Feature, FEATURE_NAME, FEATURE_CLASS} = require('feature')
+{decSymbol} = require('symbols')
 
-FEATURE_INT = 'interrupt'
+FEATURE_INT = decSymbol 'FEATURE_INT', 'interrupt'
 
-INTERRUPTS_VAR = 'interrupts'
-TIMER_VAR = 'interrupts_timer'
-FREQ_VAR = 'interrupts_freq'
-LAST_VAR = 'interrupts_last_int'
+INTERRUPTS_VAR = decSymbol 'INTERRUPTS_VAR', 'interrupts'
+TIMER_VAR = decSymbol 'TIMER_VAR', 'interrupts_timer'
+FREQ_VAR = decSymbol 'FREQ_VAR', 'interrupts_freq'
+LAST_VAR = decSymbol 'LAST_VAR', 'interrupts_last_int'
 
 # Once every 500ms
-DEFAULT_FREQ = 500
+DEFAULT_FREQ = decSymbol 'DEFAULT_FREQ', 500
 
 class Interrupt extends Feature
 	constructor: (interrupt_number) ->
@@ -22,13 +23,13 @@ class Interrupt extends Feature
 		@initialize cpu unless cpu[INTERRUPTS_VAR]?
 		return
 	
-	initialize: (_cpu) ->
+	initialize: (cpu) ->
 		feature = @
 		cpu[INTERRUPTS_VAR] = []
 		cpu[TIMER_VAR] = 0
 		cpu[FREQ_VAR] = DEFAULT_FREQ
 		cpu[LAST_VAR] = feature.timestamp()
-		cpu.handle_interrupts = () -> feature.handle_interrupts @
+		cpu.handle_interrupts = () -> feature.handle_interrupts cpu
 		((real_cycle) ->
 			cpu.cycle = () ->
 				timestamp = feature.timestamp()
@@ -36,7 +37,7 @@ class Interrupt extends Feature
 					@[TIMER_VAR]++
 					@handle_interrupts()
 					@[LAST_VAR] = feature.timestamp()
-				@fetch()
+				real_cycle()
 		)(cpu.cycle)
 		return
 	
@@ -44,3 +45,4 @@ class Interrupt extends Feature
 
 	handle_interrupts: (cpu) ->
 		
+decSymbol 'Interrupt', Interrupt

@@ -19,6 +19,7 @@ require('coffee-script/register')
  STDIO_FEOF, STDIO_IN, STDIO_ERR} = require('../features/io/stdio')
 {TinyCPU} = require('tinycpu')
 {vlog} = require('verbosity')
+symbols = require('symbols')
 
 vlog(50, "TinyCPU", TinyCPU)
 cpu = new TinyCPU
@@ -91,3 +92,5 @@ vlog(50, cpu.memory)
 while halted == false
 	cpu.cycle()
 vlog(20, "CPU halted, quitting")
+
+vlog(30, "Symbols:", symbols.getSymbols())
