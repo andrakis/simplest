@@ -1,13 +1,15 @@
 # Features test
 #
 # This is a generic test for the TinyCPU and some features.
-# It tests two useful ones:
+# It tests a few useful ones:
 #
 #  halt     When CPU encounters endless jump, calls callback to
 #           allow the host process to stop CPU execution.
-#  stdio    Allows input / output across streams
+#  stdio    Allows input / output across streams.
+#  flags    Enable/disable the per-cycle special registers (eq0, mt0, lt0).
+#  paging   Map memory ranges to pages.
 #
-# The test loads both of these features into a CPU instance,
+# The test loads all of these features into a CPU instance,
 # then compiles some code to work with stdio. The final command
 # is the endless jump: abs0, 0, cp
 #
