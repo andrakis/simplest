@@ -73,7 +73,7 @@ class Feature
 	
 	handle_initialize: (cpu, real_initialize) ->
 		real_initialize.call cpu
-		vlog 50, 'After initialize: ', cpu
+		#vlog 50, 'After initialize: ', cpu
 
 decSymbol 'Feature', Feature
 

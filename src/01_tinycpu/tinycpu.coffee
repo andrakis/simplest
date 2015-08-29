@@ -57,8 +57,8 @@ class TinyCPU
 		@lt0 = @defReg 'lt0'
 		@r1 = @defReg 'r1'
 		@r2 = @defReg 'r2'
-		@memory[@sp] = 0
 		@new_stack 0
+		vlog 100, "Writing opsize 3 to #{@opsz}"
 		@opsize = @write @opsz, 3         # Size of an instruction, 3 values
 
 	defReg: (name) ->
@@ -118,8 +118,9 @@ class TinyCPU
 		vlog(40, "execute(", [sp, src, add, dst].join(', '), ")")
 		vlog(60, "(sp=", sp, ")", @registers[src - sp] || src, " + ", add, "->", @registers[dst - sp] || dst)
 		val = @write dst, @read(src) + add
-		vlog(90, "Updating cp...")
-		@write sp + @cp, @read(sp + @cp) + @read(sp + @opsz)
+		opsz = @read(sp + @opsz)
+		vlog(90, "Updating cp by #{opsz}...")
+		@write sp + @cp, @read(sp + @cp) + opsz
 		vlog(90, "Cp is now ", @read sp + @cp)
 		@update_flags sp, val
 	

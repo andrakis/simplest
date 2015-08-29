@@ -48,15 +48,19 @@ stdio = new Stdio((buffer_index, buffer) ->
 stdio.load_into cpu
 
 paging = false
-#paging = new Paging
-#paging.load_into cpu
+paging = new Paging
+paging.load_into cpu
+
+# Page the range before we load code in
+if paging
+	paging.page_range 0, 500
 
 # All features in place, now we can initialize cpu and load code
 vlog(30, stdio.get_features(cpu).join(', '), 'loaded into test CPU')
 cpu.initialize()
 
 #vlog(30, "Symbols:", symbols.getSymbols())
-vlog 10, "CPU: ", cpu
+#vlog 10, "CPU: ", cpu
 {abs0, cp, ac, flags, r1, r2} = cpu.registers
 
 # Write a small program to print "Hello World!" via STDOUT
@@ -99,18 +103,12 @@ hello = [
 ]
 vlog(50, "Code: [", hello.join(', '), "]")
 
-# Page the range before we load it in
-if paging
-	paging.page_range 0, 500
-
 # Disable the flags register to reduce spam. It can be re-enabled in code
 # when needed.
 cpu.write flags, 0x00
 cpu.load 100, hello
 # Setup entry point
 cpu.write cp, 100
-# Debug
-vlog(50, cpu.memory)
 
 # Run the cpu until halted
 cycles = -1
