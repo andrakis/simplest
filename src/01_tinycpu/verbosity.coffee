@@ -1,5 +1,6 @@
 # Verbosity-based logging
 #
+# Provides a simple level-based verbosity logging to standard output.
 
 {decSymbol} = require('symbols')
 

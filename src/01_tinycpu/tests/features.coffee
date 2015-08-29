@@ -20,6 +20,7 @@ require('coffee-script/register')
 {TinyCPU} = require('tinycpu')
 {vlog} = require('verbosity')
 symbols = require('symbols')
+{charCode} = require('tc_util')
 
 vlog(50, "TinyCPU", TinyCPU)
 cpu = new TinyCPU
@@ -42,8 +43,6 @@ stdio = new Stdio((buffer_index, buffer) ->
 stdio.load_into cpu
 
 vlog(30, stdio.get_features(cpu).join(', '), 'loaded into test CPU')
-
-charCode = (S) -> ("" + S).charCodeAt(0)
 
 {abs0, cp, ac, r1, r2} = cpu.registers
 

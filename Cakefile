@@ -16,11 +16,12 @@ debug = () ->
 # '' is used to denote no new path.
 appFiles =
 	'01_tinycpu':
-		'': ['tinycpu', 'verbosity', 'symbols']
+		'': ['tinycpu', 'symbols', 'tc_util', 'verbosity']
 		'features':
 			'': ['feature', 'dma', 'buffer']
 			interrupts: ['interrupt']
 			io: ['stdio']
+			mm: ['paging']
 			watchers: ['halt']
 		'tests':
 			'': ['features']

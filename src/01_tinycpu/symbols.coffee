@@ -1,3 +1,9 @@
+# The Symbols module keeps track of definitions created by the TinyCPU and
+# any accompanying features.
+#
+# The idea is to allow code to be written and compiled in both JS/CoffeeScript
+# and also to allow a compiler to perform symbol substitution.
+
 # Symbols defined by features are stored here.
 definition_cache = {}
 
