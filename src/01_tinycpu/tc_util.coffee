@@ -1,7 +1,14 @@
 # TinyCPU Util functions
 #
 
-charCode = (S) -> ("" + S).charCodeAt(0)
+exports.charCode = (S) -> ("" + S).charCodeAt(0)
 
-exports = module.exports =
-	charCode: charCode
+clone = (obj) ->
+	return obj  if obj is null or typeof (obj) isnt "object"
+	temp = new obj.constructor()
+	for key of obj
+		temp[key] = clone(obj[key])
+	temp
+exports.clone = clone
+
+module.exports = exports

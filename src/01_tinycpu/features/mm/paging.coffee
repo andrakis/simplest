@@ -13,6 +13,7 @@
 
 {decSymbol} = require 'symbols'
 {vlog} = require 'verbosity'
+{clone} = require 'tc_util'
 
 PAGE_DEFAULT_SIZE = decSymbol 'PAGE_DEFAULT_SIZE', 32 * 1024
 
@@ -51,6 +52,7 @@ PagingImplementations =
 
 class PagingOptions
 	constructor: (Options) ->
+		Options = Options || {}
 		@PageSize = Options.PageSize || PAGE_DEFAULT_SIZE
 		# Name of entry in PagingImplementations
 		@PageImplementation = 'Default'
@@ -63,7 +65,7 @@ options = new PagingOptions
 
 class Page
 	constructor: (pageSize, implementation) ->
-		@pageSize = pageSize || PAGE_DEFAULT_SIZE
+		@pageSize = pageSize || options.PageSize
 		@implementation = options.getPageImplementation implementation
 	
 	read: (location) -> @implementation.read location
@@ -77,13 +79,21 @@ class PagingNode
 		@prev = null
 		@next = null
 		@page = new Page range, @implementation
+	
+	read: (location) -> @page.read location
+	write: (location, value) -> @page.write location, value
+
+PGSTATS_PAGES_ALLOCATED = decSymbol 'PGSTATS_PAGES_ALLOCATED', 'pages_allocated'
 
 class Paging
 	constructor: (Options) ->
+		Options = Options || {}
 		{@pageSize, @implementation} = Options
 		@pageSize = @pageSize || options.PageSize
 		@implementation = @implementation || options.PageImplementation
+		@stats = {}
 		@head = @allocate 0
+		@stat PGSTATS_PAGES_ALLOCATED, 1
 	
 	# Public API.
 	
@@ -95,7 +105,13 @@ class Paging
 		@reset_head location
 		@head.write location - @head.start, value
 	
+	get_stats: () -> clone @stats
+	
 	# Private API.
+
+	stat: (stat, increment) ->
+		@stats[stat] = @stats[stat] || 0
+		@stats[stat] += increment
 
 	# Reset the head page location.
 	# Subsequent memory operations are highly likely to occur on the current
@@ -117,21 +133,22 @@ class Paging
 		else
 			# Next page not exist or too high? Insert page
 			if !PagingNode.next || location < PagingNode.next.start
-				PagingNodeAllocate location, PagingNode
+				@allocate location, PagingNode
 			@select location, PagingNode.next
 	
-	allocate: (location, PagingNode) ->
-		node = new PagingNode memAlign(location), @pageSize, @implementation
-		return node unless PagingNode
+	allocate: (location, FromNode) ->
+		node = new PagingNode @align(location), @pageSize, @implementation
+		@stat PGSTATS_PAGES_ALLOCATED, +1
+		return node unless FromNode
 
-		if location < Page.start
-			node.next = Page
-			node.prev = Page.prev
-			Page.prev = node
+		if location < FromNode.start
+			node.next = FromNode
+			node.prev = FromNode.prev
+			FromNode.prev = node
 		else
-			node.next = Page.next
-			node.prev = Page
-			Page.next = node
+			node.next = FromNode.next
+			node.prev = FromNode
+			FromNode.next = node
 		node
 
 	align: (offset) ->
@@ -152,33 +169,35 @@ PageTest = () ->
 	paging = new Paging
 
 	while offset < 0xFFFFFFFF
-		paging.write offset + 0, charCode('H'), mem
-		paging.write offset + 1, charCode('e'), mem
-		paging.write offset + 2, charCode('l'), mem
-		paging.write offset + 3, charCode('l'), mem
-		paging.write offset + 4, charCode('o'), mem
-		if paging.read(offset + 0, mem) != charCode('H') ||
-		paging.read(offset + 1, mem) != charCode('e') ||
-		paging.read(offset + 2, mem) != charCode('l') ||
-		paging.read(offset + 3, mem) != charCode('l') ||
-		paging.read(offset + 4, mem) != charCode('o')
-				return offset
+		paging.write offset + 0, charCode('H')
+		paging.write offset + 1, charCode('e')
+		paging.write offset + 2, charCode('l')
+		paging.write offset + 3, charCode('l')
+		paging.write offset + 4, charCode('o')
+		if paging.read(offset + 0) != charCode('H') ||
+		paging.read(offset + 1) != charCode('e') ||
+		paging.read(offset + 2) != charCode('l') ||
+		paging.read(offset + 3) != charCode('l') ||
+		paging.read(offset + 4) != charCode('o')
+			return "failure at #{offset}"
 		offset *= 10
 	offset = -0xFF
 	while offset > -0xFFFFFF
-		paging.write offset + 0, charCode('H'), mem
-		paging.write offset + 1, charCode('e'), mem
-		paging.write offset + 2, charCode('l'), mem
-		paging.write offset + 3, charCode('l'), mem
-		paging.write offset + 4, charCode('o'), mem
-		if paging.read(offset + 0, mem) != charCode('H') ||
-		paging.read(offset + 1, mem) != charCode('e') ||
-		paging.read(offset + 2, mem) != charCode('l') ||
-		paging.read(offset + 3, mem) != charCode('l') ||
-		paging.read(offset + 4, mem) != charCode('o')
-			return offset
+		paging.write offset + 0, charCode('H')
+		paging.write offset + 1, charCode('e')
+		paging.write offset + 2, charCode('l')
+		paging.write offset + 3, charCode('l')
+		paging.write offset + 4, charCode('o')
+		if paging.read(offset + 0) != charCode('H') ||
+		paging.read(offset + 1) != charCode('e') ||
+		paging.read(offset + 2) != charCode('l') ||
+		paging.read(offset + 3) != charCode('l') ||
+		paging.read(offset + 4) != charCode('o')
+			return "failure at #{offset}"
 		offset *= 10
-	0
+	stats = paging.get_stats()
+	console.log "Pages allocated: ", stats[PGSTATS_PAGES_ALLOCATED]
+	'pass'
 
 if process.env.TCPU_PAGE_TEST
 	console.log "Paging test: ", PageTest()

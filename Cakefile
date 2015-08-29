@@ -28,7 +28,6 @@ appFiles =
 	'02_concur':
 		lib: ['concur']
 	
-
 # Flatten appFiles into standard array
 translate = (files, pathAcc) ->
 	path = pathAcc || []
@@ -91,12 +90,21 @@ task 'watch', 'Watch files for changes', ->
 		print data.toString()
 
 task 'run', 'Run test feature', ->
-	node_path = "src/01_tinycpu"
-	init_path = "src/01_tinycpu/tests/features"
-	p = spawn "node", [init_path],
-		env:
-			NODE_PATH: node_path
-			TINY_VERB: process.TINY_VERB || 0
+	run_node "src/01_tinycpu/tests/features", "src/01_tinycpu",
+		TINY_VERB: process.TINY_VERB || 0
+
+task 'run_verbose', 'Run test feature with full verbosity', ->
+	run_node "src/01_tinycpu/tests/features", "src/01_tinycpu",
+		TINY_VERB: 100
+
+task 'test_paging', 'Test the paging functionality', ->
+	run_node "src/01_tinycpu/features/mm/paging", "src/01_tinycpu",
+		TCPU_PAGE_TEST: 1
+		
+run_node = (entry, lib_path, env) ->
+	env['NODE_PATH'] = lib_path
+	p = spawn "node", [entry],
+		env: env
 		stdio: [0, 1, 2]
 	console.log("Node starting up", p)
 	p.on 'exit', (code) ->

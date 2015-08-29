@@ -46,6 +46,8 @@ vlog(30, stdio.get_features(cpu).join(', '), 'loaded into test CPU')
 
 {abs0, cp, ac, r1, r2} = cpu.registers
 
+vlog(30, "Symbols:", symbols.getSymbols())
+
 # Write a small program to print "Hello World!" via STDOUT
 hello = [
 	# Select STDOUT
@@ -91,5 +93,3 @@ vlog(50, cpu.memory)
 while halted == false
 	cpu.cycle()
 vlog(20, "CPU halted, quitting")
-
-vlog(30, "Symbols:", symbols.getSymbols())
