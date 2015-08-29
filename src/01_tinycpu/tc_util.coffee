@@ -11,4 +11,8 @@ clone = (obj) ->
 	temp
 exports.clone = clone
 
+exports.StackTrace = () ->
+	err = new Error
+	err.stack
+
 module.exports = exports

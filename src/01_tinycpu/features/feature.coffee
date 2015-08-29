@@ -5,6 +5,7 @@
 
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
+{StackTrace} = require('tc_util')
 
 CPU_FEATURE_VAR = decSymbol 'CPU_FEATURE_VAR', '_features'
 FEATURE_NAME    = decSymbol 'FEATURE_NAME', 'name'
@@ -38,7 +39,6 @@ class Feature
 	
 	handle_read: (loc, cpu, real_read) ->
 		# Dummy implementation. Reads that value from cpu memory
-		vlog(100, "self is", @)
 		vlog(80, "handle_read(", [loc].join(', '), "): Feature dummy implementation")
 		real_read.call cpu, loc
 	
@@ -55,20 +55,25 @@ class Feature
 		vlog(10, "Loading", @name, "into CPU instance")
 		name = @name
 		((instance, feature) ->
-			((read, write, interrupt) ->
+			((initialize, read, write, interrupt) ->
 				if !instance[CPU_FEATURE_VAR]?
 					instance[CPU_FEATURE_VAR] = {}
+				instance.initialize = () -> feature.handle_initialize instance, initialize
 				instance.read = (loc) -> feature.handle_read loc, instance, read
 				instance.write = (loc, value) -> feature.handle_write loc, value, instance, write
 				instance.interrupt = (num) -> feature.interrupt num, instance
 				instance[CPU_FEATURE_VAR][name] = feature
 				feature.handle_load_into instance
 				instance
-			)(instance.read, instance.write, instance.interrupt)
+			)(instance.initialize, instance.read, instance.write, instance.interrupt)
 		)(cpu, @)
 	
 	handle_load_into: (cpu) ->
 		# Dummy implementation.
+	
+	handle_initialize: (cpu, real_initialize) ->
+		real_initialize.call cpu
+		vlog 50, 'After initialize: ', cpu
 
 decSymbol 'Feature', Feature
 

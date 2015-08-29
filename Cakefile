@@ -21,8 +21,10 @@ appFiles =
 			'': ['feature', 'dma', 'buffer']
 			interrupts: ['interrupt']
 			io: ['stdio']
-			mm: ['paging']
-			watchers: ['halt']
+			mm:
+				'': ['paging']
+				support: ['pages']
+			watchers: ['flags', 'halt']
 		'tests':
 			'': ['features']
 	'02_concur':
@@ -101,15 +103,37 @@ task 'test_paging', 'Test the paging functionality', ->
 	run_node "src/01_tinycpu/features/mm/paging", "src/01_tinycpu",
 		TCPU_PAGE_TEST: 1
 		
+# Make sure we only run one at a time
+node_queue = []
+node_running = false
+run_next_node = () ->
+	next = node_queue.shift()
+	if next
+		console.log "Instantiating next node"
+		instantiate_node next, run_next_node
+	else
+		console.log "Node processes finished, exiting"
+		process.exit 0
+
 run_node = (entry, lib_path, env) ->
+	node_queue.push
+		entry: entry
+		lib_path: lib_path
+		env: env
+	run_next_node()  unless node_running
+
+instantiate_node = (options, finish_callback) ->
+	{entry, lib_path, env} = options
 	env['NODE_PATH'] = lib_path
+	node_running = true
 	p = spawn "node", [entry],
 		env: env
 		stdio: [0, 1, 2]
-	console.log("Node starting up", p)
+	console.log "Node starting up", p
 	p.on 'exit', (code) ->
-		console.log("Node quit (", code, "), finishing")
-		process.exit(code)
+		node_running = false
+		console.log "Node quit (#{code})"
+		return finish_callback()  if finish_callback
 
 task 'clean', 'Clean compiled js files', ->
 	jsFiles = []

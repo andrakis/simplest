@@ -12,88 +12,35 @@
 #
 
 {decSymbol} = require 'symbols'
+feature = require 'features/feature'
+dma = require 'features/dma'
 {vlog} = require 'verbosity'
 {clone} = require 'tc_util'
+Pages = require 'features/mm/support/pages'
 
-PAGE_DEFAULT_SIZE = decSymbol 'PAGE_DEFAULT_SIZE', 32 * 1024
-
-# This is the worker implementation, ie the class that performs the actual
-# reading and writing for a page.
-# New implementations can be created by extending this class and passing it
-# to the Paging class instance.
-class PageImplementation
-	constructor: () ->
-		@init()
-
-	# Public API. You are discouraged from altering these.
-	read: (location) -> @do_read location
-	write: (location, value) -> @do_write location, value
-
-	# Overridable API. Extending classes should implement their own versions
-	# of the following functions.
-
-	# Called upon construction
-	init: () ->
-		vlog 50, 'PageImplementation.init: base implementation'
-		@memory = {}
-	
-	# Perform a read operation
-	do_read: (location) ->
-		vlog 50, 'PageImplementation.do_read: base implementation'
-		@memory[location] || 0
-	
-	# Perform a write operation
-	do_write: (location, value) ->
-		vlog 50, 'PageImplementation.do_write: base implementation'
-		@memory[location] = value || 0
-
-PagingImplementations =
-	Default: PageImplementation
-
-class PagingOptions
-	constructor: (Options) ->
-		Options = Options || {}
-		@PageSize = Options.PageSize || PAGE_DEFAULT_SIZE
-		# Name of entry in PagingImplementations
-		@PageImplementation = 'Default'
-	
-	getPageImplementation: (name) ->
-		x = PagingImplementations[name || @PageImplementation]
-		new x
-
-options = new PagingOptions
-
-class Page
-	constructor: (pageSize, implementation) ->
-		@pageSize = pageSize || options.PageSize
-		@implementation = options.getPageImplementation implementation
-	
-	read: (location) -> @implementation.read location
-	write: (location, value) -> @implementation.write location, value
-
-class PagingNode
-	constructor: (start, range, implementation) ->
-		@start = start
-		@range = range
-		@implementation = implementation
-		@prev = null
-		@next = null
-		@page = new Page range, @implementation
-	
-	read: (location) -> @page.read location
-	write: (location, value) -> @page.write location, value
+DMA = dma[feature.FEATURE_CLASS]
+{DMA_DISABLED} = dma
+{FEATURE_NAME, FEATURE_CLASS} = feature
 
 PGSTATS_PAGES_ALLOCATED = decSymbol 'PGSTATS_PAGES_ALLOCATED', 'pages_allocated'
 
-class Paging
+# Copy all the exported symbols from Pages into this module
+for key, value of Pages
+	exports[key] = value
+
+class Paging extends DMA
 	constructor: (Options) ->
 		Options = Options || {}
 		{@pageSize, @implementation} = Options
-		@pageSize = @pageSize || options.PageSize
-		@implementation = @implementation || options.PageImplementation
+		@pageSize = @pageSize || Pages.options.PageSize
+		@implementation = @implementation || Pages.options.PageImplementation
 		@stats = {}
 		@head = @allocate 0
 		@stat PGSTATS_PAGES_ALLOCATED, 1
+		super
+			rangeStart: DMA_DISABLED
+			rangeEnd: DMA_DISABLED
+			name: "Paging"
 	
 	# Public API.
 	
@@ -106,6 +53,19 @@ class Paging
 		@head.write location - @head.start, value
 	
 	get_stats: () -> clone @stats
+
+	# Page the given range
+	page_range: (start, end) ->
+		dma_range_id = @declare_range start, end
+		return false  unless dma_range_id
+		# TODO: Set protection and interrupts
+		dma_range_id
+	
+	unpage_range: (start, end) ->
+		dma_range_id = @remove_range start, end
+		return false  unless dma_range_id
+		# TODO: Remove protection and interrupts
+		dma_range_id
 	
 	# Private API.
 
@@ -137,7 +97,7 @@ class Paging
 			@select location, PagingNode.next
 	
 	allocate: (location, FromNode) ->
-		node = new PagingNode @align(location), @pageSize, @implementation
+		node = new Pages.PagingNode @align(location), @pageSize, @implementation
 		@stat PGSTATS_PAGES_ALLOCATED, +1
 		return node unless FromNode
 
@@ -162,6 +122,18 @@ class Paging
 
 		return -offset - @pageSize if sign
 		return offset
+	
+	# DMA feature overrides
+	dma_read: (loc, cpu) ->
+		result = @read loc
+		vlog 70, "Paging.lanes[#{@dma_id}].dma_read(#{loc}) = #{result}"
+		result
+	
+	dma_write: (loc, value, cpu) ->
+		result = @write loc, value
+		vlog 70, "Paging.lanes[#{@dma_id}].dma_write(#{loc}, #{value}) = #{result}"
+		result
+exports.Paging = Paging
 
 PageTest = () ->
 	{charCode} = require 'tc_util'
@@ -201,3 +173,5 @@ PageTest = () ->
 
 if process.env.TCPU_PAGE_TEST
 	console.log "Paging test: ", PageTest()
+
+module.exports = exports

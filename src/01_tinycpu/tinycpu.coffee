@@ -26,6 +26,7 @@
 #   cp           Code pointer
 #   opsz         Opsize. Each operation takes 3 values. This means a jump
 #                operation needs to jump 3 places for each instruction set.
+#   flags        Enables eq0, mt0, and lt0 if bit 1 is on
 #   r1 - r2      General purpose registers.
 #
 # Memory is a hash of numbers. For lazyness, this is not using any strict
@@ -42,6 +43,8 @@ class TinyCPU
 		@registers = {}
 		@register_count = 0
 
+	initialize: () ->
+		vlog 100, 'CPU initialize'
 		@abs0 = @defReg 'abs0'
 		@sp = @defReg 'sp'
 		@psp = @defReg 'psp'
@@ -54,12 +57,12 @@ class TinyCPU
 		@lt0 = @defReg 'lt0'
 		@r1 = @defReg 'r1'
 		@r2 = @defReg 'r2'
-
 		@memory[@sp] = 0
 		@new_stack 0
 		@opsize = @write @opsz, 3         # Size of an instruction, 3 values
 
 	defReg: (name) ->
+		vlog 100, "Defining register #{name}"
 		pos = @register_count++
 		@registers[name] = pos
 		@registers[pos] = name
@@ -68,10 +71,12 @@ class TinyCPU
 	
 	load: (loc, data) ->
 		# This is just neater in javascript
+		vlog 100, "Loading #{data.length} bytes into #{loc}"
 		`for (var i = 0; i < data.length; i++, loc++) this.write(loc, data[i])`
 		return
 	
 	new_stack: (start) ->
+		vlog 100, "Creating new stack at #{start}"
 		offset = 0
 		for i in [0..@register_count]
 			@write start + offset++, 0
@@ -116,6 +121,9 @@ class TinyCPU
 		vlog(90, "Updating cp...")
 		@write sp + @cp, @read(sp + @cp) + @read(sp + @opsz)
 		vlog(90, "Cp is now ", @read sp + @cp)
+		@update_flags sp, val
+	
+	update_flags: (sp, val) ->
 		@write sp + @ac, @read(sp + @ac) + val
 		@write sp + @dc, @read(sp + @dc) - val
 		@write @eq0, if (val == 0) then @opsize else 0

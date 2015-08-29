@@ -9,11 +9,8 @@
 {Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
 {decSymbol} = require('symbols')
 
-FEATURE_HALT = 'halt'
-HALTED_VAR = 'halted'
-
-decSymbol 'FEATURE_HALT', FEATURE_HALT
-decSymbol 'HALTED_VAR', HALTED_VAR
+FEATURE_HALT = decSymbol 'FEATURE_HALT', 'halt'
+HALTED_VAR = decSymbol 'HALTED_VAR', 'halted'
 
 class Halt extends Feature
 	constructor: (halt_callback) ->

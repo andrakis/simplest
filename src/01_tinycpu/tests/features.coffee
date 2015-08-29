@@ -15,12 +15,14 @@
 require('coffee-script/register')
 {Feature} = require('../features/feature')
 {Halt} = require('../features/watchers/halt')
+{Flags} = require('../features/watchers/flags')
 {Stdio, Buffer, STDIO_OUT, STDIO_CHANNEL, STDIO_WRITE, STDIO_FLUSH,
  STDIO_FEOF, STDIO_IN, STDIO_ERR} = require('../features/io/stdio')
 {TinyCPU} = require('tinycpu')
 {vlog} = require('verbosity')
 symbols = require('symbols')
 {charCode} = require('tc_util')
+{Paging} = require('features/mm/paging')
 
 vlog(50, "TinyCPU", TinyCPU)
 cpu = new TinyCPU
@@ -29,6 +31,9 @@ cpu.enable_debug true
 # Register a callback for the halt feature
 halted = false
 (new Halt(() -> halted = true)).load_into cpu
+
+# Enable the flags feature, which greatly cuts down on debugging output
+(new Flags).load_into cpu
 
 stdio = new Stdio((buffer_index, buffer) ->
 	# Handle a flush event
@@ -42,11 +47,17 @@ stdio = new Stdio((buffer_index, buffer) ->
 )
 stdio.load_into cpu
 
+paging = false
+#paging = new Paging
+#paging.load_into cpu
+
+# All features in place, now we can initialize cpu and load code
 vlog(30, stdio.get_features(cpu).join(', '), 'loaded into test CPU')
+cpu.initialize()
 
-{abs0, cp, ac, r1, r2} = cpu.registers
-
-vlog(30, "Symbols:", symbols.getSymbols())
+#vlog(30, "Symbols:", symbols.getSymbols())
+vlog 10, "CPU: ", cpu
+{abs0, cp, ac, flags, r1, r2} = cpu.registers
 
 # Write a small program to print "Hello World!" via STDOUT
 hello = [
@@ -72,6 +83,8 @@ hello = [
 	abs0, STDIO_IN, STDIO_CHANNEL
 	STDIO_FEOF, 0, r1
 	# Add '0' to result and print
+	# We need flags again
+	abs0, 0x01, flags
 	0, 0, ac   # Clear AC
 	r1, 0, r1  # Observe r1
 	0, 48, r2  # Add 48, ASCII for '0'
@@ -79,10 +92,20 @@ hello = [
 	abs0, STDIO_OUT, STDIO_CHANNEL  # Back to output channel
 	r1, 0, STDIO_WRITE # Write result
 	abs0, STDIO_FLUSH, STDIO_CHANNEL # Flush
+	# Disable flags
+	abs0, 0x0, flags
 	# Endless loop
 	abs0, 0, cp
 ]
 vlog(50, "Code: [", hello.join(', '), "]")
+
+# Page the range before we load it in
+if paging
+	paging.page_range 0, 500
+
+# Disable the flags register to reduce spam. It can be re-enabled in code
+# when needed.
+cpu.write flags, 0x00
 cpu.load 100, hello
 # Setup entry point
 cpu.write cp, 100
@@ -90,6 +113,7 @@ cpu.write cp, 100
 vlog(50, cpu.memory)
 
 # Run the cpu until halted
-while halted == false
+cycles = -1
+while halted == false && cycles-- != 0
 	cpu.cycle()
 vlog(20, "CPU halted, quitting")
