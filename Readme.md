@@ -11,6 +11,8 @@ The projects currently under development are:
 	easy to port. Features extend the capabilities of the CPU to provide modern
 	conveniences such as interrupts, DMA, paging, and virtual hardware.
 
+	A usually up to date example page is up at http://www.thedaedalus.net/simplest
+
 	TinyCPU is currently in an early operational state, with several features implemented and some sample programs.
 
 	It is an iteration over some previous projects:
