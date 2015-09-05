@@ -5,7 +5,7 @@
 # question.
 #
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS, RegisterFeature, Options} = require('features/feature')
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
 
@@ -77,6 +77,10 @@ class DMA extends Feature
 		@debug = DEBUG unless @debug?
 		@name = "generic DMA device" unless @name
 		super @name
+		range = @option 'range', new Options.IntegerRangeOption('range', @rangeStart, @rangeEnd)
+		range.bind 'set', (range) ->
+			[@rangeStart, @rangeEnd] = range
+			return
 
 		if isNaN(@rangeStart)
 			if isNaN(@rangeEnd)
@@ -145,7 +149,7 @@ class DMA extends Feature
 		else
 			offset = loc
 			result = real_read loc
-		vlog 70, "dma_read(#{offset}) = #{result}" + (if match then " (dma handled by #{@name}.#{match.id})" else "(not handled by #{@name})" )
+		vlog 70, "dma_read(#{offset}) = #{result}" + (if match then " (dma handled by #{@name}.#{match.id})" else " (not handled by #{@name})" )
 		result
 	
 	handle_write: (loc, value, cpu, real_write) ->
@@ -171,6 +175,7 @@ class DMA extends Feature
 		0
 
 decSymbol "DMA", DMA
+RegisterFeature "DMA", DMA
 
 exports = module.exports || {}
 exports[FEATURE_NAME]  = FEATURE_DMA

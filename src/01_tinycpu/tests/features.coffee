@@ -15,7 +15,7 @@
 #
 
 require('coffee-script/register')
-{Feature} = require('features/feature')
+{Feature, GetFeatures} = require('features/feature')
 {Halt} = require('features/watchers/halt')
 {Flags} = require('features/watchers/flags')
 {Stdio, Buffer, STDIO_OUT, STDIO_CHANNEL, STDIO_READ, STDIO_WRITE, STDIO_FLUSH,
@@ -28,6 +28,7 @@ symbols = require('symbols')
 {Bitmask} = require('features/io/bitmask')
 
 test = ( ->
+	console.log "The available features are: ", (name for own name of GetFeatures())
 
 	vlog(50, "TinyCPU", TinyCPU)
 	cpu = new TinyCPU

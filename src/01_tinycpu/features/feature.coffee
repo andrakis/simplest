@@ -5,7 +5,8 @@
 
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
-{StackTrace, clone} = require('tc_util')
+{StackTrace, clone, DumpObjectFlat} = require('tc_util')
+Options = require 'features/feature_options'
 
 CPU_FEATURE_VAR = decSymbol 'CPU_FEATURE_VAR', '_features'
 FEATURE_NAME    = decSymbol 'FEATURE_NAME', 'name'
@@ -15,7 +16,7 @@ FEATURE_CLASS   = decSymbol 'FEATURE_CLASS', 'class'
 feature_cache = {}
 
 register_feature = (name, feature) ->
-	throw "already registered" if name in feature_cache
+	throw "already registered" if name in feature_cache and feature_cache[name] != feature
 	feature_cache[name] = feature
 
 get_features = () ->
@@ -24,7 +25,15 @@ get_features = () ->
 class Feature
 	constructor: (name) ->
 		@name = name
-		register_feature name, @
+		@options = {}
+	
+	option: (name, option) ->
+		if @options[name]?
+			console.log "option #{name} already defined as", @options[name], StackTrace()
+			throw "option #{name} already defined as #{DumpObjectFlat(@options[name])}"
+		@options[name] = option
+	
+	get_options: () -> clone @options
 
 	has_feature: (name, cpu) -> name of cpu[CPU_FEATURE_VAR]
 	
@@ -83,6 +92,8 @@ exports = module.exports =
 	FEATURE_NAME: 'name'
 	FEATURE_CLASS: FEATURE_CLASS
 	Feature: Feature
+	RegisterFeature: register_feature
 	GetFeatures: get_features
+	Options: Options
 
 decSymbol 'Feature.exports', exports

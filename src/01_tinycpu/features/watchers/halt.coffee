@@ -6,7 +6,7 @@
 # TODO: Support for interrupts.
 #
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS, RegisterFeature, Options} = require('features/feature')
 {decSymbol} = require('symbols')
 
 FEATURE_HALT = decSymbol 'FEATURE_HALT', 'halt'
@@ -16,6 +16,7 @@ class Halt extends Feature
 	constructor: (halt_callback) ->
 		@halt_callback = halt_callback
 		super FEATURE_HALT
+		@option 'halt_callback', new Options.FeatureOptionStub 'halt_callback', halt_callback
 
 	handle_load_into: (cpu) ->
 		feature = @
@@ -38,6 +39,7 @@ class Halt extends Feature
 		)(cpu.execute)
 
 decSymbol 'Halt', Halt
+RegisterFeature 'Watchers/Halt', Halt
 
 exports.Halt = Halt
 exports[FEATURE_NAME] = FEATURE_HALT

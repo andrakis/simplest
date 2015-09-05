@@ -5,7 +5,7 @@
 #
 # TODO: Ability to selective disable special register calculations.
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS, RegisterFeature} = require('features/feature')
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
 
@@ -36,6 +36,7 @@ class Flags extends Feature
 			real_update_flags.call cpu, sp, val
 		val
 decSymbol 'Flags', Flags
+RegisterFeature 'Watchers/Flags', Flags
 
 exports.Flags = Flags
 exports[FEATURE_NAME] = FEATURE_FLAGS

@@ -68,6 +68,7 @@ class Stdio extends DMA
 			name: "standard io"
 			rangeStart: STDIO_RANGE[0]
 			rangeEnd: STDIO_RANGE[1]
+		@option 'flush_callback', new feature.Options.FeatureOptionStub 'flush_callback', flush_callback
 	
 	dma_read: (loc, cpu) ->
 		result = switch loc
@@ -124,6 +125,7 @@ class Stdio extends DMA
 		@buffer_index
 
 decSymbol 'Stdio', Stdio
+feature.RegisterFeature 'IO/stdio', Stdio
 
 exports = module.exports =
 	STDIO_CHANNEL: STDIO_CHANNEL

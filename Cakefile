@@ -31,7 +31,7 @@ appFiles =
 		'': ['symbols', 'tc_util', 'verbosity', 'tinycpu']
 		#'a_assembler': ['tca']
 		'features':
-			'': ['feature', 'dma', 'buffer']
+			'': ['feature_options', 'feature', 'dma', 'buffer']
 			interrupts: ['interrupt']
 			io: ['bitmask', 'stdio']
 			mm:

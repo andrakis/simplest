@@ -2,7 +2,7 @@
 #
 #
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS, RegisterFeature, Options} = require('features/feature')
 {decSymbol} = require('symbols')
 
 FEATURE_INT = decSymbol 'FEATURE_INT', 'interrupt'
@@ -17,7 +17,9 @@ DEFAULT_FREQ = decSymbol 'DEFAULT_FREQ', 500
 
 class Interrupt extends Feature
 	constructor: (interrupt_number) ->
+		interrupt_number = interrupt_number || 0
 		@number = interrupt_number
+		@option new Options.IntegerOption 'interrupt_number', interrupt_number
 
 	handle_load_into: (cpu) ->
 		@initialize cpu unless cpu[INTERRUPTS_VAR]?
@@ -45,6 +47,7 @@ class Interrupt extends Feature
 
 	handle_interrupts: (cpu) ->
 exports.Interrupt = Interrupt
+RegisterFeature 'Interrupt', Interrupt
 		
 decSymbol 'Interrupt', Interrupt
 

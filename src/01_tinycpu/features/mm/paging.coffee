@@ -41,6 +41,11 @@ class Paging extends DMA
 			rangeStart: DMA_DISABLED
 			rangeEnd: DMA_DISABLED
 			name: "Paging"
+		#range = @option 'range', new feature.Options.IntegerRangeOption('range', @rangeStart, @rangeEnd)
+		#range.bind 'set', (range) ->
+		#	[@rangeStart, @rangeEnd] = range
+		#	return
+		range = @option 'ranges', new feature.Options.FeatureOptionStub 'ranges', []
 	
 	# Public API.
 	
@@ -134,6 +139,8 @@ class Paging extends DMA
 		vlog 70, "Paging.lanes[#{@dma_id}].dma_write(#{loc}, #{value}) = #{result}"
 		result
 exports.Paging = Paging
+decSymbol 'Paging', Paging
+feature.RegisterFeature 'MM/paging', Paging
 
 PageTest = () ->
 	{charCode} = require 'tc_util'
