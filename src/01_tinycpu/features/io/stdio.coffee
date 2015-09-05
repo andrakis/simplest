@@ -109,6 +109,15 @@ class Stdio extends DMA
 		else
 			throw "stdio: switch_buffer(#{buffer}): invalid buffer"
 	
+	push_to_buffer: (contents, buffer_id) ->
+		old = @buffer_index
+		@switch_buffer buffer_id
+		for char in contents
+			@buffer.write char
+		@buffer_index = old
+		@switch_buffer @buffer_index
+		contents.length
+	
 	handle_flush: () ->
 		vlog(50, "STDIO.flush(), calling callback: ", @flush_callback)
 		@flush_callback(@buffer_index, @buffer)

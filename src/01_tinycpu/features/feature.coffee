@@ -5,7 +5,7 @@
 
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
-{StackTrace} = require('tc_util')
+{StackTrace, clone} = require('tc_util')
 
 CPU_FEATURE_VAR = decSymbol 'CPU_FEATURE_VAR', '_features'
 FEATURE_NAME    = decSymbol 'FEATURE_NAME', 'name'
@@ -18,7 +18,8 @@ register_feature = (name, feature) ->
 	throw "already registered" if name in feature_cache
 	feature_cache[name] = feature
 
-get_features = () -> feature_cache
+get_features = () ->
+	clone feature_cache
 
 class Feature
 	constructor: (name) ->
@@ -82,5 +83,6 @@ exports = module.exports =
 	FEATURE_NAME: 'name'
 	FEATURE_CLASS: FEATURE_CLASS
 	Feature: Feature
+	GetFeatures: get_features
 
 decSymbol 'Feature.exports', exports

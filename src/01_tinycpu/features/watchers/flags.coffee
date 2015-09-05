@@ -41,4 +41,6 @@ exports.Flags = Flags
 exports[FEATURE_NAME] = FEATURE_FLAGS
 exports[FEATURE_CLASS] = Flags
 
+module.exports = exports
+
 decSymbol 'Flags.exports', exports

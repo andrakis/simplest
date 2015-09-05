@@ -34,8 +34,8 @@
 #
 # Additional features can be loaded into a TinyCpu instance. See features/
 
-{vlog} = require('verbosity')
-{decSymbol} = require('symbols')
+{vlog} = require 'verbosity'
+{decSymbol} = require 'symbols'
 
 class TinyCPU
 	constructor: () ->
@@ -75,11 +75,15 @@ class TinyCPU
 		`for (var i = 0; i < data.length; i++, loc++) this.write(loc, data[i])`
 		return
 	
-	new_stack: (start) ->
+	new_stack: (start, psp) ->
 		vlog 100, "Creating new stack at #{start}"
 		offset = 0
 		for i in [0..@register_count]
 			@write start + offset++, 0
+		# Setup previous stack pointer
+		@write start + @psp, psp || 0
+		# Adjust abs0 to point to 0, relative to current sp
+		@write start + @abs0, -start
 		return
 	
 	read: (loc) -> @memory[loc] || 0
@@ -134,7 +138,7 @@ class TinyCPU
 
 decSymbol 'TinyCPU', TinyCPU
 
-exports = module.exports =
+exports = ex = module.exports =
 	TinyCPU: TinyCPU
 
-decSymbol 'TinyCPU.exports', exports
+decSymbol 'TinyCPU.exports', ex

@@ -9,8 +9,6 @@
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
 
-exports = exports || {}
-
 DEBUG = true
 
 FEATURE_DMA = decSymbol 'FEATURE_DMA','DMA'
@@ -180,5 +178,7 @@ exports[FEATURE_CLASS] = DMA
 exports.register_feature = register_range
 exports.find_feature = find_feature
 exports.DMA_DISABLED = DMA_DISABLED
+
+module.exports = exports
 
 decSymbol "DMA.exports", exports

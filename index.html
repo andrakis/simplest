@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<title>TinyCPU test page</title>
+		<script type="text/javascript" src="util.js"></script>
+		<style type="text/css">
+			#log {
+				font-family: monospace;
+				white-space: pre;
+
+				height: 90%;
+				overflow-x: hidden;
+				overflow-y: auto;
+				border: 1px solid;
+				color: white;
+				background-color: black;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="log"></div>
+		<script type="text/javascript" src="web_console.js"></script>
+		<script type="text/javascript" src="web_shim.js"></script>
+		<script type="text/javascript">
+			process.env.TINY_VERB = 20;
+		</script>
+		<script type="text/javascript" src="app.js"></script>
+	</body>
+</html>

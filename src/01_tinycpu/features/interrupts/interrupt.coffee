@@ -2,7 +2,7 @@
 #
 #
 
-{Feature, FEATURE_NAME, FEATURE_CLASS} = require('feature')
+{Feature, FEATURE_NAME, FEATURE_CLASS} = require('features/feature')
 {decSymbol} = require('symbols')
 
 FEATURE_INT = decSymbol 'FEATURE_INT', 'interrupt'
@@ -44,5 +44,8 @@ class Interrupt extends Feature
 	timestamp: () -> (new Date).getTime()
 
 	handle_interrupts: (cpu) ->
+exports.Interrupt = Interrupt
 		
 decSymbol 'Interrupt', Interrupt
+
+module.exports = exports

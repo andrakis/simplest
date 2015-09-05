@@ -1,12 +1,24 @@
-fs     = require 'fs'
+fs      = require 'fs'
+{print} = require 'util'
 {spawn, exec} = require 'child_process'
 
+extend = exports.extend = (object, properties) ->
+	for key, val of properties
+		object[key] = val
+	object
+clone = (obj) ->
+	return obj  if obj is null or typeof (obj) isnt "object"
+	temp = new obj.constructor()
+	for key of obj
+		temp[key] = clone(obj[key])
+	temp
 typeIsArray = Array.isArray || (value) -> return {}.toString.call(value) is '[object Array]'
 
 debugLevel = process.env.CAKE_VERB || 10
 debug = () ->
 	args = Array.prototype.slice.call(arguments)
 	level = args.shift()
+	args.unshift "(#{level})"
 	if level <= debugLevel
 		console.log.apply(console, args)
 
@@ -16,14 +28,15 @@ debug = () ->
 # '' is used to denote no new path.
 appFiles =
 	'01_tinycpu':
-		'': ['tinycpu', 'symbols', 'tc_util', 'verbosity']
+		'': ['symbols', 'tc_util', 'verbosity', 'tinycpu']
+		#'a_assembler': ['tca']
 		'features':
 			'': ['feature', 'dma', 'buffer']
 			interrupts: ['interrupt']
-			io: ['stdio']
+			io: ['bitmask', 'stdio']
 			mm:
-				'': ['paging']
 				support: ['pages']
+				'': ['paging']
 			watchers: ['flags', 'halt']
 		'tests':
 			'': ['features']
@@ -58,22 +71,94 @@ translate = (files, pathAcc) ->
 appFiles = translate(appFiles)
 debug(10, appFiles)
 
+moduleWrap = undefined
+getModuleWrap = (callback) ->
+	if moduleWrap?
+		return callback moduleWrap
+
+	fs.readFile "src/wrap.js", 'utf8', (err, wrap) ->
+		throw err if err
+		fs.readFile "src/wrap_post.js", 'utf8', (err2, wrap_post) ->
+			throw err2 if err2
+			moduleWrap = (definitions, content) ->
+				debug 70, "wrapping module, definitions are", definitions
+				full = "#{wrap}\n#{content}\n#{wrap_post}"
+				rewrite_definitions full, definitions
+			callback moduleWrap
+rewrite_definitions = (content, definitions) ->
+	for key, value of definitions
+		debug 70, "  #{key} => #{value}"
+		regex = new RegExp "([^A-Za-z0-9_]*)#{key}([^A-Za-z0-9])", 'g'
+		content = content.replace regex, "$1#{value}$2"
+	content
+
+wrapModule = (definitions, contents, callback) ->
+	getModuleWrap (wrap) ->
+		callback wrap(definitions, contents)
+
+default_definitions =
+	__verbose__: 0
+
 task 'build_app', 'Build single application file from source files', ->
-  appContents = new Array remaining = appFiles.length
-  for file, index in appFiles then do (file, index) ->
-    fs.readFile "src/#{file}.coffee", 'utf8', (err, fileContents) ->
-      throw err if err
-      appContents[index] = fileContents
-      process() if --remaining is 0
-  process = ->
-    fs.writeFile 'app.coffee', appContents.join('\n\n'), 'utf8', (err) ->
-      throw err if err
-      exec 'coffee --compile app.coffee', (err, stdout, stderr) ->
-        throw err if err
-        console.log stdout + stderr
-        fs.unlink 'app.coffee', (err) ->
-          throw err if err
-          console.log 'Done.'
+  # Prepend the app_boot.coffee file
+	appContents = new Array
+	remaining = appFiles.length
+	appJs = []
+	for file, index in appFiles then do (file, index) ->
+		fs.readFile "src/#{file}.coffee", 'utf8', (err, fileContents) ->
+			debug 30, "got contents for #{file}.coffee, length: #{fileContents.length}"
+			# Run some substitutions
+			# Remove first directory name
+			fixedFilePath = file.replace /^.*?\//, ''
+			definitions = extend clone(default_definitions),
+				__file__: fixedFilePath
+			appContents[index] =
+				file: file
+				content: fileContents
+				definitions: definitions
+			process() if --remaining is 0
+	process = ->
+		debug 60, "process()"
+		next()
+	finish = ->
+		debug 60, "finish()"
+		# Get the app wrappers
+		fs.readFile 'src/app_wrapper.js', 'utf8', (err, app_wrapper) ->
+			throw err if err
+			appJs.unshift rewrite_definitions app_wrapper, default_definitions
+			fs.readFile 'src/app_wrapper_post.js', 'utf8', (err, app_wrapper_post) ->
+				throw err if err
+				appJs.push rewrite_definitions app_wrapper_post, default_definitions
+				fs.writeFile 'app.js', appJs.join("\n\n"), 'utf8', (err) ->
+					throw err if err
+					console.log 'Done.'
+	next = ->
+		debug 60, "next()"
+		return finish() if appContents.length == 0
+		{file, content, definitions} = appContents.shift()
+		debug 50, "writing intermediate"
+		fs.writeFile 'intermediate.coffee', content, 'utf8', (err) ->
+			debug 50, "got contents, spawning coffee for #{file}"
+			throw err if err
+			exec 'coffee --compile intermediate.coffee', (err, stdout, stderr) ->
+				debug 90, "coffee result got: #{err}"
+				throw err if err
+				print "."
+				debug 50, stdout + stderr
+				fs.unlink 'intermediate.coffee', (err) ->
+					debug 60, "unlink intermediate ok"
+					throw err if err
+					fs.readFile 'intermediate.js', 'utf8', (err, fileContents) ->
+						debug 60, "intermediate.js: #{fileContents.length}"
+						throw err if err
+						fs.unlink 'intermediate.js', (err) ->
+							throw err if err
+							debug 90, "unlink ok"
+							wrapModule definitions, fileContents, (result) ->
+								debug 50, "wrapModule got result: #{result.length}"
+								appJs.push result
+								next()
+							return
 
 task 'build', 'Build source files', ->
 	# Prefix appFiles
@@ -98,6 +183,9 @@ task 'run', 'Run test feature', ->
 task 'run_verbose', 'Run test feature with full verbosity', ->
 	run_node "src/01_tinycpu/tests/features", "src/01_tinycpu",
 		TINY_VERB: 100
+
+task 'run_app', 'Run the compiled app.js version of the test feature', ->
+	run_node "app", "", {}
 
 task 'test_paging', 'Test the paging functionality', ->
 	run_node "src/01_tinycpu/features/mm/paging", "src/01_tinycpu",
@@ -129,7 +217,7 @@ instantiate_node = (options, finish_callback) ->
 	p = spawn "node", [entry],
 		env: env
 		stdio: [0, 1, 2]
-	console.log "Node starting up", p
+	console.log "Spawning: node #{entry}"
 	p.on 'exit', (code) ->
 		node_running = false
 		console.log "Node quit (#{code})"

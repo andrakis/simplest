@@ -35,7 +35,7 @@ class Buffer
 			@pos -= @buffer.length
 		@pos
 
-	_push: (value) -> vlog(70, "This is ", @); @buffer.push value; value
+	_push: (value) -> @buffer.push value; value
 	_pop: () -> @buffer.pop()
 
 	# Read up to the end of the buffer (or max) and return as a string
@@ -52,5 +52,7 @@ class Buffer
 
 decSymbol 'Buffer', Buffer
 exports.Buffer = Buffer
+
+module.exports = exports
 
 decSymbol 'Buffer.exports', exports

@@ -43,4 +43,6 @@ exports.Halt = Halt
 exports[FEATURE_NAME] = FEATURE_HALT
 exports[FEATURE_CLASS] = Halt
 
+module.exports = exports
+
 decSymbol 'Halt.exports', exports
