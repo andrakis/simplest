@@ -129,9 +129,13 @@ class TelnetInterface extends SuperClass
 	on_close: () ->
 
 server_socket = undefined
-server = net.createServer (stream) ->
-	client = new TelnetClient stream
-	int = new TelnetInterface client
-server.on 'connection', (socket) -> server_socket = socket
-server.listen TELNET_SERVER_PORT
-console.log "Waiting for connection on port #{TELNET_SERVER_PORT}"
+
+exports.test = ->
+	server = net.createServer (stream) ->
+		client = new TelnetClient stream
+		int = new TelnetInterface client
+	server.on 'connection', (socket) -> server_socket = socket
+	server.listen TELNET_SERVER_PORT
+	console.log "Waiting for connection on port #{TELNET_SERVER_PORT}"
+
+exports.test() if typeof modules == 'undefined'
