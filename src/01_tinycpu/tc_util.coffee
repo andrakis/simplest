@@ -22,19 +22,32 @@ exports.DumpObjectFlat = (obj) ->
 	for property of obj
 		value = obj[property]
 		if typeof value == 'string'
-			console.log 'type is string'
-			value = '\'' + value + '\''
+			value = "'#{value}'"
 		else if typeof value == 'object'
-			console.log 'value is object'
 			if value instanceof Array
-				value = '[ ' + value + ' ]'
+				value = "[ #{value} ]"
 			else
 				ood = exports.DumpObjectFlat(value)
-				value = '{ ' + ood.dump + ' }'
-		result += '\'' + property + '\' : ' + value + ', '
+				value = "{ #{ood.dump} }"
+		result += "'#{property}' : #{value}, "
 		len++
 	od.dump = result.replace(/, $/, '')
 	od.len = len
 	od
+
+moduleKeywords = ['included', 'extended']
+
+class SuperClass
+	@include: (obj, extendedModuleKeywords) ->
+		throw('include(obj) requires obj') unless obj
+		if typeof obj == 'string'
+			obj = require obj
+		extendedModuleKeywords = extendedModuleKeywords || []
+		for key, value of obj.prototype when (key not in moduleKeywords and key not in extendedModuleKeywords)
+			@::[key] = value
+		included = obj.included
+		included.apply(this) if included
+		@
+exports.SuperClass = SuperClass
 
 module.exports = exports

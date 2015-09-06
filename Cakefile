@@ -29,6 +29,8 @@ debug = () ->
 appFiles =
 	'01_tinycpu':
 		'': ['symbols', 'tc_util', 'verbosity', 'tinycpu']
+		'util':
+			'': ['events']
 		#'a_assembler': ['tca']
 		'features':
 			'': ['feature_options', 'feature', 'dma', 'buffer']
@@ -42,6 +44,8 @@ appFiles =
 			'': ['features']
 	'02_concur':
 		lib: ['concur']
+	'03_telnet_server':
+		'': ['server']
 	
 # Flatten appFiles into standard array
 translate = (files, pathAcc) ->
@@ -98,9 +102,13 @@ wrapModule = (definitions, contents, callback) ->
 
 default_definitions =
 	__verbose__: 0
+	__APP__: true        # In app mode
 
+# Build the single app.js file.
+# This uses wrappers around compile coffeescript files, and implements its
+# own module system to allow code to work in node or the web browser.
 task 'build_app', 'Build single application file from source files', ->
-  # Prepend the app_boot.coffee file
+	# Prepend the app_boot.coffee file
 	appContents = new Array
 	remaining = appFiles.length
 	appJs = []
@@ -185,7 +193,10 @@ task 'run_verbose', 'Run test feature with full verbosity', ->
 		TINY_VERB: 100
 
 task 'run_app', 'Run the compiled app.js version of the test feature', ->
-	run_node "app", "", {}
+	run_node "app"
+
+task 'run_telnet', 'Run the telnet server', ->
+	run_node "src/03_telnet_server/server", "src/01_tinycpu"
 
 task 'test_paging', 'Test the paging functionality', ->
 	run_node "src/01_tinycpu/features/mm/paging", "src/01_tinycpu",
@@ -204,6 +215,8 @@ run_next_node = () ->
 		process.exit 0
 
 run_node = (entry, lib_path, env) ->
+	lib_path ||= ""
+	env ||= {}
 	node_queue.push
 		entry: entry
 		lib_path: lib_path

@@ -1,5 +1,5 @@
 // App wrapper start
-var modules = {}, ref;
+var modules = {}, ref, APP_WRAPPER = true;
 
 var start_time = +new Date();
 

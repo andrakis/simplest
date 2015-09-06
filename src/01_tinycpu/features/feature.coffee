@@ -5,7 +5,7 @@
 
 {vlog} = require('verbosity')
 {decSymbol} = require('symbols')
-{StackTrace, clone, DumpObjectFlat} = require('tc_util')
+{StackTrace, clone, DumpObjectFlat, SuperClass} = require('tc_util')
 Options = require 'features/feature_options'
 
 CPU_FEATURE_VAR = decSymbol 'CPU_FEATURE_VAR', '_features'
@@ -22,7 +22,7 @@ register_feature = (name, feature) ->
 get_features = () ->
 	clone feature_cache
 
-class Feature
+class Feature extends SuperClass
 	constructor: (name) ->
 		@name = name
 		@options = {}
