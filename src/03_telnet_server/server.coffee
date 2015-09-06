@@ -128,6 +128,7 @@ class TelnetInterface extends SuperClass
 		return
 	on_close: () ->
 
+server = undefined
 server_socket = undefined
 
 exports.test = ->
