@@ -30,7 +30,7 @@ appFiles =
 	'01_tinycpu':
 		'': ['symbols', 'tc_util', 'verbosity', 'tinycpu']
 		'util':
-			'': ['events']
+			'': ['events', 'StreamBuffer', 'var_dump']
 		#'a_assembler': ['tca']
 		'features':
 			'': ['feature_options', 'feature', 'dma', 'buffer']
@@ -39,9 +39,12 @@ appFiles =
 			mm:
 				support: ['pages']
 				'': ['paging']
+			net:
+				support: ['telnet_client']
+				'': ['telnet']
 			watchers: ['flags', 'halt']
 		'tests':
-			'': ['features']
+			'': ['features', 'telnet']
 	'02_concur':
 		lib: ['concur']
 	'03_telnet_server':
@@ -195,7 +198,12 @@ task 'run_verbose', 'Run test feature with full verbosity', ->
 task 'run_app', 'Run the compiled app.js version of the test feature', ->
 	run_node "app"
 
-task 'run_telnet', 'Run the telnet server', ->
+task 'run_telnet', 'Run the TinyCPU telnet server / monitor', ->
+	run_node "src/01_tinycpu/tests/telnet", "src/01_tinycpu",
+		RUN_TARGET: 'telnet'
+		TINY_VERB: 100
+
+task 'run_03_telnet', 'Run the telnet server project', ->
 	run_node "src/03_telnet_server/server", "src/01_tinycpu"
 
 task 'test_paging', 'Test the paging functionality', ->

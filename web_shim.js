@@ -2,7 +2,7 @@
 
 function stub (name) {
 	return function() {
-		console.log("STUB: for " + name);
+		console.log("STUB: for " + name + " called with ", arguments);
 		return undefined;
 	};
 }
@@ -14,6 +14,9 @@ if (typeof process == 'undefined') {
 			TINY_VERB: 0
 		},
 		platform: 'browser',
+		nextTick: function (callback) {
+			setTimeout(callback, 0);
+		}
 	};
 }
 

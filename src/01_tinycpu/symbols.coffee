@@ -20,6 +20,13 @@ decSymbol = (name, value) ->
 getSymbol = (name) -> definition_cache[name]
 getSymbols = () -> definition_cache
 
+hasSymbol = (name) -> definition_cache[name]? ? true : false
+
+setSymbol = (name, value) ->
+	was = definition_cache[name]
+	definition_cache[name] = value
+	was
+
 if typeof __WEB_APP__ != 'undefined'
 	decSymbol '__WEB_APP__', __WEB_APP__
 
@@ -28,3 +35,5 @@ exports = module.exports =
 	decSymbol: decSymbol
 	getSymbol: getSymbol
 	getSymbols: getSymbols
+	setSymbol: setSymbol
+	hasSymbol: hasSymbol

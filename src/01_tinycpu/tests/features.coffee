@@ -28,7 +28,7 @@ symbols = require('symbols')
 {Bitmask} = require('features/io/bitmask')
 
 test = ( ->
-	console.log "The available features are: ", (name for own name of GetFeatures())
+	vlog 0, "The available features are: ", (name for own name of GetFeatures())
 
 	vlog(50, "TinyCPU", TinyCPU)
 	cpu = new TinyCPU
@@ -48,7 +48,7 @@ test = ( ->
 			when STDIO_OUT then "stdout"
 			when STDIO_ERR then "stderr"
 		content = buffer.flush()
-		console.log "(#{stream}) #{content}"
+		vlog 0, "(#{stream}) #{content}"
 		return
 	)
 	stdio.load_into cpu
@@ -175,4 +175,4 @@ exports = module.exports =
 	test: test
 
 # Being run from node.js directly?
-exports.test() if typeof modules == 'undefined'
+exports.test() if typeof modules == 'undefined' && (!process.env.RUN_TARGET || process.env.RUN_TARGET == 'features')

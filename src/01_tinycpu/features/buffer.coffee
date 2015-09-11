@@ -33,6 +33,10 @@ class Buffer extends SuperClass
 		@_push value
 		@fire 'write', value
 		value
+	write_string: (string) ->
+		for char in string
+			@_push char
+		string
 	seek: (offset, from) ->
 		@pos = switch from
 			when SEEK_CURR  then pos + offset

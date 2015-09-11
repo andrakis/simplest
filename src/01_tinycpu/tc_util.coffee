@@ -1,6 +1,8 @@
 # TinyCPU Util functions
 #
 
+var_dump = undefined
+
 exports.charCode = (S) -> ("" + S).charCodeAt(0)
 
 clone = (obj) ->
@@ -16,24 +18,15 @@ exports.StackTrace = () ->
 	err.stack
 
 exports.DumpObjectFlat = (obj) ->
-	od = new Object
-	result = ''
-	len = 0
-	for property of obj
-		value = obj[property]
-		if typeof value == 'string'
-			value = "'#{value}'"
-		else if typeof value == 'object'
-			if value instanceof Array
-				value = "[ #{value} ]"
-			else
-				ood = exports.DumpObjectFlat(value)
-				value = "{ #{ood.dump} }"
-		result += "'#{property}' : #{value}, "
-		len++
-	od.dump = result.replace(/, $/, '')
-	od.len = len
-	od
+	#return "undefined"  if obj == undefined
+	#return exports.var_dump obj  if typeof obj == 'object'
+	#return obj.toString()  if obj.toString?
+	return obj  if typeof obj == 'string'
+	return obj  if typeof obj == 'number'
+	if var_dump?
+		return var_dump obj
+	{var_dump} = require 'util/var_dump'
+	var_dump obj
 
 moduleKeywords = ['included', 'extended']
 
@@ -49,5 +42,12 @@ class SuperClass
 		included.apply(this) if included
 		@
 exports.SuperClass = SuperClass
+
+exports.removeArrayItem = (array, item) ->
+	index = array.indexOf item
+	return array  unless index > -1
+
+	array.splice index, 1
+	array
 
 module.exports = exports

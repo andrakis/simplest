@@ -6,7 +6,7 @@ implementation, thereby allowing ease of porting.
 
 The projects currently under development are:
 
-* TinyCPU
+* 01 TinyCPU
 	TinyCPU is a One Instruction Set Computer (OISC), which is designed to be modular and
 	easy to port. Features extend the capabilities of the CPU to provide modern
 	conveniences such as interrupts, DMA, paging, and virtual hardware.
@@ -28,10 +28,28 @@ The projects currently under development are:
 
 	Features are presently implemented in Coffeescript. They provide a base interface for anyone who wishes to port to another platform.
 
-* Concur
+	New feature:
+
+	* Telnet server: cake run_telnet
+
+		The telnet server presently crashes as soon as a client disconnects. This is to be fixed soon.
+
+		Try this sequence of commands:
+
+			set TINY_VERB=10
+			attach stdout
+			test
+
+		Try using a higher or lower TINY_VERB setting value and running the test, to see the different verbosity levels.
+
+* 02 Concur
 	Concur is an object-based virtual machine that aims for concurrency and communications between concur processes.
 
 	Its design is heavily influenced by Erlang.
 
 	Concur is currently in a very early state.
 
+* 03 Telnet Server [complete]
+	The Telnet Server was a simple test at getting a running telnet server going, whilst decoupling the underling IO from the command interface.
+
+	It can be run using: cake run_03_telnet

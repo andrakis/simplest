@@ -4,7 +4,7 @@ var web_console;
 		flat: DumpObjectFlat,
 		indented: DumpObjectIndented
 	};
-	var dumpMethod = methods['flat'];
+	var dumpMethod = methods['indented'];
 	// Causes console.log to write to an element
 	console.log = (function (old_function, div_log) {
 		return function () {
@@ -19,7 +19,6 @@ var web_console;
 					text.push(arg.toString());
 			}
 			text = text.join(' ');
-			//old_function(text);
 			div_log.innerHTML += text + "\n";
 			div_log.scrollTop = div_log.scrollHeight;
 		};

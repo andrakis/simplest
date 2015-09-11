@@ -6,7 +6,7 @@ net = require 'net'
 {Events} = require 'util/events'
 {SuperClass} = require 'tc_util'
 
-TELNET_VERB = 100
+TELNET_VERB = 20
 TELNET_SERVER_PORT = 8888
 
 log = () ->
@@ -72,7 +72,7 @@ class TelnetInterface extends SuperClass
 
 		@command 'help', () ->
 			@write "Available commands:\n"
-			@write (cmd for own cmd of @commands).join ','
+			@write (cmd for own cmd of @commands).join ', '
 			@write "\n"
 
 		@command 'shutdown', () ->
@@ -135,6 +135,7 @@ exports.test = ->
 	server = net.createServer (stream) ->
 		client = new TelnetClient stream
 		int = new TelnetInterface client
+		clients.push client
 	server.on 'connection', (socket) -> server_socket = socket
 	server.listen TELNET_SERVER_PORT
 	console.log "Waiting for connection on port #{TELNET_SERVER_PORT}"
